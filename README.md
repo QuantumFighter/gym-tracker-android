@@ -23,7 +23,7 @@ Repository: [QuantumFighter/gym-tracker-android](https://github.com/QuantumFight
 
 ## Direction
 
-Use Kotlin, Android Studio, Compose with Material 3, ViewModel and StateFlow, Coroutines, repositories, Room/SQLite, Gradle Kotlin DSL, JUnit and Android UI tests. Plan GitHub Actions and one GitHub Project after approval. There is no backend, login or cloud synchronisation in the initial release.
+Use Kotlin, Android Studio, Compose with Material 3, ViewModel and StateFlow, Coroutines, repositories, Room/SQLite, Gradle Kotlin DSL, JUnit and Android UI tests. Use one [GitHub Project](https://github.com/users/QuantumFighter/projects/2) for Agile tracking. Android build workflows are deferred to B-01. There is no backend, login or cloud synchronisation in the initial release.
 
 The proposed architecture is a single application module with clear UI, domain-rule and data packages. Persist workout actions transactionally. Snapshot routine prescriptions into sessions so later editing never rewrites history. Keep progression, superset rest policy and estimates independently testable.
 
@@ -48,7 +48,7 @@ Product decisions and the defaults bundle are approved and consolidated in [Deci
 
 Review [Decisions](docs/DECISIONS.md) for the approved defaults and remaining administrative details, then [Release plan](docs/RELEASE_PLAN.md) and [Backlog](docs/BACKLOG.md) for delivery. The backlog contains 6 epics, 20 implementation stories and one explicitly uncommitted wish list. No approved initial-release feature has been moved to that wish list.
 
-Requirement IDs (`FR-*`, `NFR-*`) are stable. Backlog keys (`B-*`) are temporary planning references, not invented GitHub issue numbers. Test scenarios (`T-*`) define evidence expected during implementation; none have run against an application yet. After issue creation, GitHub becomes the only source of delivery status; this backlog becomes an index of issue links.
+Requirement IDs (`FR-*`, `NFR-*`) are stable. Backlog keys (`B-*`) are temporary planning references, not invented GitHub issue numbers. Test scenarios (`T-*`) define evidence expected during implementation; none have run against an application yet. GitHub is now the only source of delivery status; the backlog is an index of imported issue links.
 
 ## Local opening and implementation handover
 
@@ -61,3 +61,12 @@ When ready, explicitly authorise Sprint 1 in a new instruction to Codex. Ask it 
 Suggested future instruction: “Begin Sprint 1 in the existing gym-tracker-android repository. Implement B-01 first using its GitHub issue and the approved planning baseline. Verify compatible stable build-tool versions, configure the Android project and required CI, and submit a focused PR. Do not expand scope or start later-sprint stories.”
 
 Planning approval and this example do not themselves authorise that work. The next user instruction must do so. Confirm the actual sprint start then; calendar dates are placeholders, and no scheduled job starts development.
+
+## GitHub setup result
+
+- [Agile Project](https://github.com/users/QuantumFighter/projects/2): 6 epics, 20 stories, native sub-issues/dependencies, Priority/Status/Iteration/Estimate fields, Backlog/Sprint 1/Milestones views.
+- Sprint 1: [B-01 #7](https://github.com/QuantumFighter/gym-tracker-android/issues/7) through [B-05 #11](https://github.com/QuantumFighter/gym-tracker-android/issues/11). None implemented.
+- Three release milestones; eight provisional 14-day iterations; estimates unset until refinement.
+- Pull requests, resolved conversations and linear history required on main; force pushes and branch deletion disabled. Solo workflow requires no second-person approval.
+- Squash merge only. Real Android build/lint/unit/UI checks remain B-01 work, so no nonexistent checks or placeholder workflows are configured.
+- Commit author email uses GitHub noreply. No personal workout data, credentials or signing material is included. GitHub setup scripts and downloaded tools are outside this repository.

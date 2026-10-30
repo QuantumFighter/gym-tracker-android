@@ -1,6 +1,6 @@
 # Product requirements
 
-Status: consolidated for final planning review, 30 October 2026. Product behaviours and defaults reflect the brief and approved decisions. Technical acceptance targets and implementation prioritisation remain recommendations for final review. Approval records are in [Decisions](DECISIONS.md). Story and test mappings live in [Backlog](BACKLOG.md) to avoid a second tracking matrix.
+Status: approved development baseline, 30 October 2026. Product behaviours, defaults, technical acceptance targets and candidate implementation priorities are accepted through final planning approval. GitHub setup does not authorise application implementation. Approval records are in [Decisions](DECISIONS.md). Story and test mappings live in [Backlog](BACKLOG.md) to avoid a second tracking matrix.
 
 ## Consistency and feasibility review
 

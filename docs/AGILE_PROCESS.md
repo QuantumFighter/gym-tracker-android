@@ -10,7 +10,7 @@ At the end, demonstrate acceptance scenarios against persisted data, review defe
 
 ## Single tracking system
 
-Create one GitHub Project after approval. Fields: Status (Backlog, Ready, In progress, In review, Done), Priority (P0–P3), Iteration, Estimate (S/M/L), milestone and parent epic. Use native issue parent relationships where available; otherwise link the epic in the issue body. Requirement IDs and acceptance criteria stay in the body, not a second spreadsheet. Board views: current sprint, prioritised backlog and milestones. WIP limit: one implementation story, with one review/defect allowed concurrently.
+Use the single [Gym Tracker Android Project](https://github.com/users/QuantumFighter/projects/2). Fields: Status (Backlog, Ready, In progress, In review, Done), Priority (P0–P3), Iteration, Estimate (S/M/L), milestone and parent epic. Use native issue parent relationships where available; otherwise link the epic in the issue body. Requirement IDs and acceptance criteria stay in the body, not a second spreadsheet. Board views: current sprint, prioritised backlog and milestones. WIP limit: one implementation story, with one review/defect allowed concurrently.
 
 Labels: `type:epic`, `type:story`, `type:bug`, `type:spike`, `type:chore`; `area:workout`, `area:programs`, `area:library`, `area:progress`, `area:data`, `area:platform`; `blocked`, `decision-needed`. Priority and iteration are fields, not duplicate labels. Milestones: M1 Manual Workout Slice, M2 Reliable Manual MVP, M3 Full Initial Release. On import, replace B-keys with actual issue links in an index; archive this document's planning order as baseline and maintain live order/status only in GitHub.
 

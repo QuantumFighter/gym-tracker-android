@@ -1,6 +1,6 @@
 # Release plan
 
-The staged M1/M2/M3 scope was approved by the owner on 30 October 2026 (Q1). Sprint sequence remains proposed, not a fixed delivery-date commitment. Each sprint lasts two weeks; no start date is assumed. Capacity is unknown. Split/reforecast stories during refinement and extend the sequence if needed rather than weaken acceptance criteria. Implementation remains unauthorised.
+The staged M1/M2/M3 scope was approved by the owner on 30 October 2026 (Q1). Sprint sequence remains proposed, not a fixed delivery-date commitment. Each sprint lasts two weeks. The Project uses provisional dates starting 2 November 2026; adjust them when development is authorised, rather than treating them as commitments. Capacity is unknown. Split/reforecast stories during refinement and extend the sequence if needed rather than weaken acceptance criteria. Implementation remains unauthorised.
 
 ## Milestones
 

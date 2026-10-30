@@ -46,7 +46,7 @@ These are project tradeoffs, not claims that Android requires this precise desig
 | Q8c: MVP distribution — APPROVED | Direct APK installation on the owner's device; Google Play publication deferred | Approved by owner on 30 October 2026. Manual APK updates initially. Public source visibility does not authorise public binary publication. Plan stable application identity and protected signing-key custody for updates during implementation. |
 | Q8d: Repository identity — APPROVED | `QuantumFighter/gym-tracker-android` | Owner approved on 30 October 2026. Public visibility and MIT licence are separately approved. Repository creation and GitHub setup were subsequently authorised on 30 October 2026; Android implementation remains unauthorised. |
 
-Q1–Q8 are resolved. Implement their approved behaviour without reopening these decisions. Technical design proposals remain part of final planning review; implementation still needs a separate explicit instruction.
+Q1–Q8 are resolved. Implement their approved behaviour without reopening these decisions. The consolidated technical baseline was accepted in final planning approval; application implementation still needs a separate explicit instruction.
 
 ## Approved defaults and workflow choices
 
@@ -77,11 +77,11 @@ The defaults bundle was approved by the owner on 30 October 2026. It is the impl
 
 ## Final review status and remaining setup details
 
-All product decisions and defaults discussed with the owner are approved. No further product questionnaire is required for this planning stage. Final review covers the consolidated foundation, recommended architecture, technical acceptance targets and candidate sprint sequence. Those technical proposals are not represented as individually approved decisions.
+All product decisions and defaults discussed with the owner are approved. No further product questionnaire is required for this planning stage. Final planning approval accepts the consolidated foundation, recommended architecture, technical acceptance targets and candidate sprint sequence as the development baseline. Sprint dates/capacity remain subject to actual kickoff refinement.
 
 Final planning approval was granted by the owner on 30 October 2026. The owner separately authorised public GitHub repository/Project setup, issue import, templates and branch protection only. Android code, Sprint 1 implementation and application build workflows remain outside this setup scope.
 
-At authorised setup, confirm the copyright-holder name for the MIT notice and local implementation folder. Do not invent a legal name from the GitHub handle. Resolve compatible stable tool versions, application identifier, signing-key custody, notification delivery mechanism and concrete exercise/load metadata during the relevant implementation stories. These are bounded implementation/refinement tasks, not additional upfront product approvals. Escalate only if evidence requires changing approved behaviour or scope.
+Setup records the owner-supplied MIT copyright-holder name Reegan Milne and the local checkout C:\QUT\Projects\gym-tracker-android. Resolve compatible stable tool versions, application identifier, signing-key custody, notification delivery mechanism and concrete exercise/load metadata during the relevant implementation stories. These are bounded implementation/refinement tasks, not additional upfront product approvals. Escalate only if evidence requires changing approved behaviour or scope.
 
 The [backlog wish list](BACKLOG.md#deferred-wish-list) is the canonical list of later enhancements. It has no dates or release commitments and does not dilute M1–M3 scope.
 
