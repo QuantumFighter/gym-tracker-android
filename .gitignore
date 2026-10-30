@@ -1,0 +1,36 @@
+# Machine-specific build/editor state
+.idea/
+.gradle/
+.kotlin/
+**/build/
+local.properties
+*.iml
+.DS_Store
+Thumbs.db
+
+# Signing material and credentials
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+keystore.properties
+credentials.json
+secrets.properties
+
+# Personal data and generated exports (use synthetic fixtures in tests)
+backups/
+exports/
+personal-data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.apk
+*.aab
+*.log
