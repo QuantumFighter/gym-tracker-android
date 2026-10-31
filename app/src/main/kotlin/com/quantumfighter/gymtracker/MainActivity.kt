@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val exercises = (application as GymTrackerApplication).exercises
-        setContent { GymTrackerApp(exercises) }
+        val container = application as GymTrackerApplication
+        setContent { GymTrackerApp(container.exercises, container.programs) }
     }
 }

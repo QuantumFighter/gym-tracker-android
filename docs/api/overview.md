@@ -1,6 +1,6 @@
 # Module GymTracker
 
-API reference for the B-01 Android foundation: a single-activity Kotlin application
+API reference for the Android application: a single-activity Kotlin application
 using Compose, Material 3, Navigation 3 and lifecycle-aware ViewModel state.
 
 `MainActivity` hosts `GymTrackerApp`, which owns the theme and navigation back stack.
@@ -10,6 +10,9 @@ Rendering receives immutable state and does not access storage.
 B-02 adds an application-owned Room database, an exercise repository and a validated
 pure Kotlin exercise model. Home prepares the catalogue through the repository and
 shows a retry state when storage is unavailable. No workout policy is implemented.
+B-03 adds transactional manual programs, independent reusable routines, ordered
+memberships/occurrences/prescriptions and the persistent next-routine choice.
+Internal feature implementation stays outside the public API reference.
 Product decisions and development instructions remain in the repository's `docs` directory.
 
 # Package com.quantumfighter.gymtracker
@@ -19,8 +22,8 @@ Compose application root.
 
 # Package com.quantumfighter.gymtracker.app
 
-Application composition root: theme and navigation ownership. The foundation has a
-single Home destination.
+Application composition root: theme, Home/Programs navigation and one shared
+Room instance supplying exercise and program repositories.
 
 # Package com.quantumfighter.gymtracker.feature.home
 
@@ -42,3 +45,13 @@ rejects archived and unsupported measurement definitions.
 
 Android-independent exercise value model, required-metadata validation and explicit
 measurement, load and ownership conventions.
+
+# Package com.quantumfighter.gymtracker.data.program
+
+Atomic manual-plan writes, ordered relational reads and the persistent Home cursor.
+Internal Room entities separate reusable routines from program membership.
+
+# Package com.quantumfighter.gymtracker.feature.programs
+
+Lifecycle-aware plan lists, creation drafts and saved-routine details. ViewModels
+orchestrate repository operations; Compose renders state and user actions.
