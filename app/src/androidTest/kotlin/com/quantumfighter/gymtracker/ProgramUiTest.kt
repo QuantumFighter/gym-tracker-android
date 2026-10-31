@@ -18,9 +18,12 @@ import com.quantumfighter.gymtracker.data.exercise.BuiltInCatalogue
 import com.quantumfighter.gymtracker.data.exercise.ExerciseRepository
 import com.quantumfighter.gymtracker.data.exercise.GymDatabase
 import com.quantumfighter.gymtracker.data.program.ProgramRepository
+import com.quantumfighter.gymtracker.domain.RoutineExerciseDraft
+import com.quantumfighter.gymtracker.domain.SetTarget
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -79,12 +82,26 @@ class ProgramUiTest {
         compose.onNodeWithText("1. ${BuiltInCatalogue.exercises[1].name}").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Set 1: 8–12 reps · Weight unset · 90 s rest").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Set 1: 8–12 reps · 0 kg · 90 s rest").performScrollTo().assertIsDisplayed()
+        // Start Home on a different persisted choice so this proves selection changes the cursor.
+        val alternativeId = runBlocking {
+            val repository = ProgramRepository(database)
+            val program = repository.readLibrary().programs.single()
+            val id = repository.createRoutine(
+                program.id,
+                "Alternative UI routine",
+                listOf(RoutineExerciseDraft("35bf2486-1052-4aa7-b571-025d9da867c8", BuiltInCatalogue.exercises.first().id, listOf(SetTarget(5, 5, null, 90)))),
+            )
+            repository.selectNextRoutine(id)
+            id
+        }
         click("Home")
+        waitFor("Alternative UI routine")
         waitFor("Choose next routine")
         click("Choose next routine")
         click("Synthetic UI program · Synthetic UI routine")
         compose.onNodeWithText("Synthetic UI routine").performScrollTo().assertIsDisplayed()
         val saved = runBlocking { ProgramRepository(database).readLibrary() }
+        assertNotEquals(alternativeId, saved.nextMembershipId)
         assertEquals(listOf(BuiltInCatalogue.exercises[1].id, BuiltInCatalogue.exercises.first().id), saved.nextRoutine!!.exercises.map { it.exercise.id })
         assertEquals(listOf(null, 0L), saved.nextRoutine!!.exercises.map { it.sets.single().loadGrams })
         click("Programs")
