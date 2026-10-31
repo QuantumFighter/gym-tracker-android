@@ -2,6 +2,7 @@ package com.quantumfighter.gymtracker
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
@@ -20,6 +21,9 @@ import com.quantumfighter.gymtracker.data.workout.WorkoutRepository
 import com.quantumfighter.gymtracker.domain.RoutineExerciseDraft
 import com.quantumfighter.gymtracker.domain.SaveSetCommand
 import com.quantumfighter.gymtracker.domain.SetTarget
+import com.quantumfighter.gymtracker.feature.workout.WorkoutRoute
+import com.quantumfighter.gymtracker.feature.workout.WorkoutViewModel
+import com.quantumfighter.gymtracker.ui.theme.GymTrackerTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -218,6 +222,62 @@ class WorkoutFinishUiTest {
             compose.onNode(hasText("Early routine ·", substring = true)).performScrollTo().performClick()
             waitFor("Finished · Read-only")
             listOf("Complete", "Partial", "Skipped").forEachIndexed { i, status -> compose.onNodeWithText("${BuiltInCatalogue.exercises[i].name} · $status").performScrollTo().assertIsDisplayed() }
+        } finally {
+            compose.activityRule.scenario.close()
+            database.close()
+            context.deleteDatabase(name)
+        }
+    }
+
+    @Test fun t03FailedWarmdownFromScrolledRecorderShowsDialogErrorAndRetry() = runBlocking {
+        val name = "b05-warmdown-error-ui-test.db"
+        context.deleteDatabase(name)
+        val database = GymDatabase.build(context, name)
+        val repository = WorkoutRepository(database)
+        try {
+            ExerciseRepository(database).seedCatalogue()
+            val plans = ProgramRepository(database)
+            val member = plans.createRoutine(plans.createProgram("Warm-down error fixture"), "Warm-down error routine", BuiltInCatalogue.exercises.take(2).map { RoutineExerciseDraft(UUID.randomUUID().toString(), it.id, listOf(SetTarget(8, 12, 12345, 90))) })
+            repository.start(member)
+            repository.warmup(false)
+            val exercise = repository.active()!!.exercises.first().exercise.id
+            repeat(2) { repository.save(SaveSetCommand(UUID.randomUUID().toString(), exercise, 12345, 8 + it, "WORKING")) }
+            repository.startRest(exercise)
+            val before = repository.active()
+            val cursor = database.programDao().settings()
+            lateinit var model: WorkoutViewModel
+            compose.runOnUiThread { model = WorkoutViewModel(repository) }
+            compose.setContent { GymTrackerTheme { WorkoutRoute(model, {}) } }
+            waitFor("Exercises")
+            click("${BuiltInCatalogue.exercises.first().name} · Partial · 2 saved")
+            compose.onNodeWithText("Home").performScrollTo().assertIsDisplayed()
+            compose.onNodeWithText("Saved sets").assertIsNotDisplayed()
+            val draft = model.uiState.value.drafts[exercise]
+            database.openHelper.writableDatabase.execSQL("CREATE TRIGGER b05_warmdown_reject BEFORE UPDATE ON workout_sessions WHEN NEW.state = 'WARM_DOWN' BEGIN SELECT RAISE(ABORT, 'synthetic failure'); END")
+            click("Warm Down")
+            compose.onNodeWithText("Enter Warm-down").performClick()
+            compose.waitUntil(10_000) { model.uiState.value.error != null }
+            compose.onNode(hasText("Could not enter warm-down.") and hasAnyAncestor(isDialog())).assertIsDisplayed()
+            compose.onNode(hasText("Retry Warm Down") and hasAnyAncestor(isDialog())).assertIsDisplayed()
+            assertEquals(before, repository.active())
+            assertEquals(cursor, database.programDao().settings())
+            assertEquals(draft, model.uiState.value.drafts[exercise])
+            compose.onNodeWithText("Keep Recording").performClick()
+            assertFalse(model.uiState.value.confirmWarmdown)
+            assertNull(model.uiState.value.error)
+            assertNull(model.uiState.value.retryLabel)
+            click("Warm Down")
+            compose.onNodeWithText("Enter Warm-down").performClick()
+            compose.waitUntil(10_000) { model.uiState.value.error != null }
+            assertEquals(before, repository.active())
+            database.openHelper.writableDatabase.execSQL("DROP TRIGGER b05_warmdown_reject")
+            compose.onNode(hasText("Retry Warm Down") and hasAnyAncestor(isDialog())).assertIsDisplayed().performClick()
+            waitFor("Warm-down")
+            assertFalse(model.uiState.value.confirmWarmdown)
+            assertNull(model.uiState.value.error)
+            assertEquals(before!!.exercises.flatMap { it.sets }, repository.active()!!.exercises.flatMap { it.sets })
+            assertEquals(cursor, database.programDao().settings())
+            assertEquals(listOf("PARTIAL", "SKIPPED"), repository.active()!!.exercises.sortedBy { it.exercise.ordinal }.map { it.exercise.status })
         } finally {
             compose.activityRule.scenario.close()
             database.close()

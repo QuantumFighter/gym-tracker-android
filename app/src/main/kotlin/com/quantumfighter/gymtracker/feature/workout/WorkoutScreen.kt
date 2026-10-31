@@ -171,8 +171,15 @@ internal fun WorkoutRoute(model: WorkoutViewModel, onHome: () -> Unit, onHistory
         }
     }
     if (state.confirmWarmdown) {
-        AlertDialog(onDismissRequest = model::cancelWarmdown, title = { Text("Unfinished exercises remain") }, text = { Text("Saved sets will be kept. Exercises with saved sets stay partial; unstarted exercises are skipped. You can return before Finish.") }, confirmButton = {
-            TextButton(onClick = { model.enterWarmdown(true) }, enabled = !state.saving) { Text("Enter Warm-down") }
+        AlertDialog(onDismissRequest = model::cancelWarmdown, title = { Text("Unfinished exercises remain") }, text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Saved sets will be kept. Exercises with saved sets stay partial; unstarted exercises are skipped. You can return before Finish.")
+                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            }
+        }, confirmButton = {
+            TextButton(onClick = {
+                if (state.retryLabel != null) model.retryCommand() else model.enterWarmdown(true)
+            }, enabled = !state.saving) { Text(state.retryLabel ?: "Enter Warm-down") }
         }, dismissButton = { TextButton(onClick = model::cancelWarmdown, enabled = !state.saving) { Text("Keep Recording") } })
     }
     if (abandon) {

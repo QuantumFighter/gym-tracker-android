@@ -61,6 +61,8 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
     }
     fun requestWarmdown() {
         if (state.value.saving) return
+        retryAction = null
+        state.value = state.value.copy(error = null, retryLabel = null, acknowledgement = null)
         if (state.value.workout?.exercises?.any { it.exercise.status != "COMPLETE" } == true) {
             state.value = state.value.copy(confirmWarmdown = true)
         } else {
@@ -68,7 +70,8 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
         }
     }
     fun cancelWarmdown() {
-        state.value = state.value.copy(confirmWarmdown = false)
+        retryAction = null
+        state.value = state.value.copy(confirmWarmdown = false, error = null, retryLabel = null)
     }
     fun enterWarmdown(confirmed: Boolean) {
         val id = state.value.workout?.session?.id ?: return
