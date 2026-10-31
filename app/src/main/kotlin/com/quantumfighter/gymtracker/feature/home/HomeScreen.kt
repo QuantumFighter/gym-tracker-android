@@ -12,6 +12,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,9 +30,9 @@ import com.quantumfighter.gymtracker.R
  * @param homeViewModel State owner constructed by the application composition root.
  */
 @Composable
-fun HomeRoute(homeViewModel: HomeViewModel) {
+internal fun HomeRoute(homeViewModel: HomeViewModel, onPrograms: () -> Unit) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(uiState, onRetryCatalogue = homeViewModel::retryCatalogue)
+    HomeScreen(uiState, onRetryCatalogue = homeViewModel::retryCatalogue, onPrograms = onPrograms, onSelectRoutine = homeViewModel::selectRoutine)
 }
 
 /**
@@ -40,7 +43,8 @@ fun HomeRoute(homeViewModel: HomeViewModel) {
  * @param onRetryCatalogue Requests another non-destructive storage initialisation attempt.
  */
 @Composable
-fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onRetryCatalogue: () -> Unit = {}) {
+internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onRetryCatalogue: () -> Unit = {}, onPrograms: () -> Unit = {}, onSelectRoutine: (String) -> Unit = {}) {
+    var choosing by rememberSaveable { mutableStateOf(false) }
     Scaffold(modifier = modifier) { contentPadding ->
         Column(
             modifier = Modifier
@@ -65,6 +69,34 @@ fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onRetryCatal
             if (uiState.catalogueFailed) {
                 Text(stringResource(R.string.catalogue_failed))
                 Button(onClick = onRetryCatalogue) { Text(stringResource(R.string.retry)) }
+            }
+            if (!uiState.catalogueLoading && !uiState.catalogueFailed) {
+                val next = uiState.library.nextRoutine
+                if (next == null) {
+                    Text("Prepare a routine for your next workout.")
+                } else {
+                    Text("Next workout", style = MaterialTheme.typography.titleMedium)
+                    Text(next.name, style = MaterialTheme.typography.titleLarge)
+                    Text("${next.exercises.size} exercises · ${next.exercises.sumOf { it.sets.size }} prescribed sets")
+                    Text("Routine saved and ready. Workout recording is available in a later update.")
+                }
+                Button(onClick = onPrograms) { Text("Programs") }
+                if (uiState.library.programs.any { it.routines.isNotEmpty() }) {
+                    Button(onClick = { choosing = !choosing }, enabled = !uiState.selecting) { Text("Choose next routine") }
+                }
+                if (uiState.selectionError) Text("Could not select routine. Check that its exercises are still available, then retry.")
+                if (choosing) {
+                    uiState.library.programs.forEach { program ->
+                        program.routines.forEach { routine ->
+                            Button(onClick = {
+                                onSelectRoutine(routine.membershipId)
+                                choosing = false
+                            }, enabled = !uiState.selecting) {
+                                Text("${program.name} · ${routine.name}")
+                            }
+                        }
+                    }
+                }
             }
         }
     }

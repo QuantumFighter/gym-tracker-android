@@ -1,5 +1,9 @@
 # Android foundation (B-01)
 
+B-03 implementation is authorised by the owner's 31 October 2026 instruction for
+Issue #9 only. B-01/B-02 are merged; the planning handover's earlier setup-only
+statements are historical. B-04 and later stories remain outside this change.
+
 Implementation authority: owner instruction on 31 October 2026, **Issue #7 only**.
 The nine planning documents remain the approved product baseline; their setup-only
 authorisation statements describe the 30 October planning handover. #8–#11 and all
@@ -196,3 +200,56 @@ Targets: p95 Home usable <2 s, save acknowledgement <500 ms. Use a profileable/r
 build for qualification and retain raw redacted samples, device conditions and percentile
 calculation. No 10,000-set/save measurement is possible in B-01; do not invent the model
 or treat an empty debug launch as the final NFR-05 result.
+
+## Manual programs and routines (B-03)
+
+Home → Programs → Create program → Add routine opens the manual preparation form.
+Name the routine, choose supported catalogue exercises, move occurrences up/down,
+and add/remove working sets. Each set has a positive repetition range, optional
+starting kg and nonnegative integer rest seconds (zero means no prescribed rest).
+The initial editable draft is one 8–12-repetition set with 90 seconds rest and no
+starting weight. Each additional set copies the preceding target for convenience.
+Bodyweight entries take no external load; total/per-hand/assistance conventions
+are explained beside the controls. Blank external weight is unknown, not zero.
+Kilograms convert exactly to integer grams, accepting at most three decimals;
+invalid text, fractional seconds, overflow and negative values cannot save.
+
+Save routine commits its definition, ordered program membership, exercise
+occurrences and ordered prescriptions in one Room transaction. Failure retains the
+draft and shows an error. The saved detail can be reopened through Programs. Home
+selects a saved membership as the next workout and retains that choice in Room.
+The first routine is selected automatically. No session starts or cursor cycling
+occurs yet; those behaviours need later stories. Drafts survive activity recreation
+through the ViewModel but are best-effort across process death; saved routines and
+Home's selection are durable. Back from a creation form discards that unsaved draft.
+
+The single application-owned database is now schema v2. Explicit `MIGRATION_1_2`
+adds `programs`, `routines`, `program_routines`, `routine_exercises`,
+`set_prescriptions` and the minimal `app_settings` cursor. It never rewrites the v1
+`exercises` table. Exported v1/v2 schemas are committed. Foreign keys use RESTRICT,
+and parent/ordinal pairs have unique indexes. Repetition/load/rest combinations
+and catalogue eligibility are validated at the domain/repository boundary, as with
+B-02 metadata; SQL does not independently enforce all value-range invariants.
+Future import/custom writers must use these same boundaries. Routine definitions
+remain independent of program membership, allowing later reuse without schema
+ownership changes. Session snapshots, shared-edit UX, advanced lifecycle workflows,
+warm-up prescriptions, estimates and progression are not implemented in B-03.
+
+`ProgramValidationTest` covers input/range/measurement rules on the JVM.
+`ProgramDatabaseTest` covers full graphs, null/zero/exact mass, order/identity,
+relationships, transactional failures, concurrent membership ordering, stale
+selection, preserved v1 content and interrupted migration rollback.
+`ProgramUiTest` exercises real Compose/ViewModel/Room creation and invalid drafts
+against isolated synthetic files. `ProgramRelaunchTest` supports external `seed` and
+`verify` phases via `-e programPhase`, comparing all catalogue rows, plan rows
+(including prescription IDs) and cursor before any reseeding, then rendering Home
+against that same isolated file. CI runs both phases around force-stop/launcher
+restart, alongside the existing B-02 relaunch phases. See [B-03 verification](verification/B-03.md).
+
+Programs tracks loading/observer failure separately from validation/save errors.
+Retry remains available after a previously successful load and restarts one
+terminated Room observation without clearing the draft or cached catalogue. Calls
+while observation is active do not create duplicate collectors.
+`ProgramsRecoveryTest` covers initial/post-load failure, visible Retry, draft/data
+retention and live updates after recovery using a controlled failing stream around
+the real Room repository.
