@@ -38,6 +38,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
       - name: Build application and smoke-test APKs
         run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Verify committed Room schemas match compiler output
+        run: |
+          git diff --exit-code -- app/schemas
+          test -z "$(git ls-files --others --exclude-standard app/schemas)"
       - name: Verify clean outputs rebuild with cached dependencies offline
         run: ./gradlew --offline clean :app:assembleDebug :app:assembleDebugAndroidTest
 
@@ -98,7 +102,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-      - name: Android launch, recreation and privacy smoke tests
+      - name: Android Room catalogue and UI privacy tests
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: ${{ inputs.api-level || '33' }}
@@ -110,3 +114,11 @@ jobs:
           script: |
             adb shell cmd connectivity airplane-mode enable
             ./gradlew :app:connectedDebugAndroidTest
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            adb shell am instrument -w -e class com.quantumfighter.gymtracker.CatalogueRelaunchTest -e cataloguePhase seed com.quantumfighter.gymtracker.debug.test/androidx.test.runner.AndroidJUnitRunner | tee /tmp/catalogue-seed.txt
+            grep -q 'OK (1 test)' /tmp/catalogue-seed.txt
+            adb shell am force-stop com.quantumfighter.gymtracker.debug
+            adb shell am start -W -n com.quantumfighter.gymtracker.debug/com.quantumfighter.gymtracker.MainActivity
+            adb shell am instrument -w -e class com.quantumfighter.gymtracker.CatalogueRelaunchTest -e cataloguePhase verify com.quantumfighter.gymtracker.debug.test/androidx.test.runner.AndroidJUnitRunner | tee /tmp/catalogue-relaunch.txt
+            grep -q 'OK (1 test)' /tmp/catalogue-relaunch.txt

@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Gym Tracker</string>
     <string name="foundation_message">Your workout space, on your device.</string>
+    <string name="catalogue_loading">Preparing exercises…</string>
+    <string name="catalogue_failed">Exercise storage is unavailable. Retry to open it again. Existing data has been kept.</string>
+    <string name="retry">Retry</string>
 </resources>

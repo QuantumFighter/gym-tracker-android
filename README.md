@@ -23,7 +23,7 @@ Repository: [QuantumFighter/gym-tracker-android](https://github.com/QuantumFight
 
 ## Direction
 
-Use Kotlin, Android Studio, Compose with Material 3, ViewModel and StateFlow, Coroutines, repositories, Room/SQLite, Gradle Kotlin DSL, JUnit and Android UI tests. Use one [GitHub Project](https://github.com/users/QuantumFighter/projects/2) for Agile tracking. B-01 establishes the toolchain and checks; Room/schema/catalogue implementation begins with separately authorised B-02. There is no backend, login or cloud synchronisation in the initial release.
+Use Kotlin, Android Studio, Compose with Material 3, ViewModel and StateFlow, Coroutines, repositories, Room/SQLite, Gradle Kotlin DSL, JUnit and Android UI tests. Use one [GitHub Project](https://github.com/users/QuantumFighter/projects/2) for Agile tracking. B-01 establishes the toolchain and checks; B-02 adds the [persistent offline exercise catalogue](docs/EXERCISE_CATALOGUE.md) and Room schema v1. There is no backend, login or cloud synchronisation in the initial release.
 
 The proposed architecture is a single application module with clear UI, domain-rule and data packages. Persist workout actions transactionally. Snapshot routine prescriptions into sessions so later editing never rewrites history. Keep progression, superset rest policy and estimates independently testable.
 
@@ -31,7 +31,7 @@ Six conceptual areas remain available: Home, Programs, Workout, Progress, Exerci
 
 ## Scope and governance
 
-Product decisions and the defaults bundle are approved and consolidated in [Decisions](docs/DECISIONS.md). The owner approved the consolidated planning foundation, including its architecture, quality targets and candidate sprint sequence, as the development baseline. Implementation authority currently covers B-01 only. MVP means the smaller manual-workout release; the full initial release also includes limited offline generation and duration/distance recording.
+Product decisions and the defaults bundle are approved and consolidated in [Decisions](docs/DECISIONS.md). The owner approved the consolidated planning foundation, including its architecture, quality targets and candidate sprint sequence, as the development baseline. The owner separately authorised B-02 on 31 October 2026 after B-01 merged. B-03 and later stories remain unauthorised. MVP means the smaller manual-workout release; the full initial release also includes limited offline generation and duration/distance recording.
 
 ## Approved baseline summary
 
