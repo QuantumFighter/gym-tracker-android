@@ -15,8 +15,9 @@ metadata. Exact direct dependency versions are in `gradle/libs.versions.toml`.
 | Android Gradle plugin | 9.3.1 stable; supports API 37; requires Gradle 9.5.0+, JDK 17+ |
 | Gradle | 9.6.0 official wrapper, distribution SHA-256 committed |
 | Kotlin / Compose compiler / serialization plugin | 2.4.21 stable; upgrade built-in KGP through the documented root buildscript classpath |
-| Build JDK | Java 25.0.4; local Android Studio JBR, CI Temurin 25.0.4+7; Java/Kotlin bytecode target 17 |
+| Build JDK | Java 25.0.4; local Android Studio JBR, CI Temurin identifier `25.0.4+7.0.LTS`; Java/Kotlin bytecode target 17 |
 | Android SDK | min 33 (Android 13); compile/target 37 (Android 17); Build Tools 36.0.0 |
+| CI SDK manager | Command-line tools 20.0, download build 14742923; explicitly install platform-tools, not the removed legacy `tools` package |
 | Compose / Material 3 | stable Compose BOM 2026.09.00, no individual overrides |
 | Navigation 3 | 1.2.0 stable, one serializable Home key; no other feature destinations |
 | Activity / Lifecycle / Coroutines | 1.13.0 / 2.11.0 / 1.11.0 |
