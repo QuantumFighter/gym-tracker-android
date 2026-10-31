@@ -10,6 +10,8 @@ import com.quantumfighter.gymtracker.domain.ProgramLibrary
 import com.quantumfighter.gymtracker.domain.RoutineExerciseDraft
 import com.quantumfighter.gymtracker.domain.SetTarget
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -32,6 +34,7 @@ internal data class ProgramsUiState(
     val library: ProgramLibrary = ProgramLibrary(),
     val catalogue: List<Exercise> = emptyList(),
     val loading: Boolean = true,
+    val loadFailed: Boolean = false,
     val saving: Boolean = false,
     val error: String? = null,
     val creatingProgram: Boolean = false,
@@ -43,28 +46,37 @@ internal data class ProgramsUiState(
     val detailMembershipId: String? = null,
 )
 
-/** Owns best-effort creation drafts; saved plans are always read back from Room. */
-internal class ProgramsViewModel(private val programs: ProgramRepository, private val exercises: ExerciseRepository) : ViewModel() {
+/**
+ * Owns best-effort creation drafts; saved plans are always read back from Room.
+ * @param library Restartable observation, defaulting to the repository's cold Room flow.
+ */
+internal class ProgramsViewModel(
+    private val programs: ProgramRepository,
+    private val exercises: ExerciseRepository,
+    private val library: Flow<ProgramLibrary> = programs.observeLibrary(),
+) : ViewModel() {
     private val mutable = MutableStateFlow(ProgramsUiState())
+    private var observationJob: Job? = null
     val state = mutable.asStateFlow()
 
     init {
         load()
     }
 
+    /** Starts one observer, or retries a terminated one, retaining drafts and save/validation errors. */
     fun load() {
-        if (!mutable.value.loading && mutable.value.error == null) return
-        mutable.update { it.copy(loading = true, error = null) }
-        viewModelScope.launch {
+        if (observationJob?.isActive == true) return
+        mutable.update { it.copy(loading = true, loadFailed = false) }
+        observationJob = viewModelScope.launch {
             try {
                 val catalogue = exercises.recordableExercises()
-                programs.observeLibrary().collect { library ->
-                    mutable.update { it.copy(library = library, catalogue = catalogue, loading = false) }
+                library.collect { library ->
+                    mutable.update { it.copy(library = library, catalogue = catalogue, loading = false, loadFailed = false) }
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (_: Exception) {
-                mutable.update { it.copy(loading = false, error = "Could not open saved programs. Automatic reset is disabled. Retry to open again.") }
+                mutable.update { it.copy(loading = false, loadFailed = true) }
             }
         }
     }

@@ -53,9 +53,16 @@ internal fun ProgramsRoute(viewModel: ProgramsViewModel, onHome: () -> Unit) {
                 modifier = Modifier.semantics { heading() },
             )
             if (state.loading) Text("Opening saved programs…")
+            if (state.loadFailed) {
+                Text(
+                    "Could not open saved programs. Automatic reset is disabled. Retry to open again.",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.testTag("programLoadError"),
+                )
+                Button(onClick = viewModel::load) { Text("Retry") }
+            }
             state.error?.let { error ->
                 Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("programError"))
-                if (state.catalogue.isEmpty()) Button(onClick = viewModel::load) { Text("Retry") }
             }
             when {
                 state.loading -> Unit

@@ -245,3 +245,11 @@ against isolated synthetic files. `ProgramRelaunchTest` supports external `seed`
 (including prescription IDs) and cursor before any reseeding, then rendering Home
 against that same isolated file. CI runs both phases around force-stop/launcher
 restart, alongside the existing B-02 relaunch phases. See [B-03 verification](verification/B-03.md).
+
+Programs tracks loading/observer failure separately from validation/save errors.
+Retry remains available after a previously successful load and restarts one
+terminated Room observation without clearing the draft or cached catalogue. Calls
+while observation is active do not create duplicate collectors.
+`ProgramsRecoveryTest` covers initial/post-load failure, visible Retry, draft/data
+retention and live updates after recovery using a controlled failing stream around
+the real Room repository.
