@@ -57,7 +57,7 @@ jobs:
           packages: 'platform-tools'
       - run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c # v5
-      - run: ./gradlew :app:lintDebug spotlessCheck
+      - run: ./gradlew :app:lintDebug spotlessCheck :app:dokkaGeneratePublicationHtml
 
   unit-tests:
     name: unit-tests

@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 private data object Home : NavKey
 
+/** Applies the app theme and owns the remembered Navigation 3 back stack, starting at Home. */
 @Composable
 fun GymTrackerApp() {
     GymTrackerTheme {

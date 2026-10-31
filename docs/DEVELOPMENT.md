@@ -23,6 +23,7 @@ metadata. Exact direct dependency versions are in `gradle/libs.versions.toml`.
 | Activity / Lifecycle / Coroutines | 1.13.0 / 2.11.0 / 1.11.0 |
 | JUnit / AndroidX Test | JUnit 4.13.2; extension 1.3.0; runner 1.7.0 |
 | Formatting | Spotless 8.10.4 with ktlint 1.7.1 |
+| API documentation | Dokka 2.2.0 stable; HTML generated from KDoc and module/package descriptions |
 
 Minimum Android support is independent of compile/target SDK. API 37 is the current
 stable SDK already installed on the development machine; the app uses no API above
@@ -78,13 +79,41 @@ dependency direction and manifest privacy. Room/KSP, schema v1 and real reposito
 tests belong with B-02's first actual persistence model. Progression, clocks/timers,
 programs, catalogue, recording and history are not implemented here.
 
+## API documentation
+
+Document meaningful API responsibilities, state ownership, parameters and non-obvious
+contracts using KDoc (`/** ... */`). Keep setup and architecture explanations in these
+Markdown documents rather than repeating them on every declaration. Update KDoc in the
+same change as the behaviour it describes. Dokka's module/package overview is
+[`api/overview.md`](api/overview.md).
+
+Generate the HTML reference from the repository root:
+
+```powershell
+.\gradlew.bat :app:dokkaGeneratePublicationHtml
+```
+
+Open `app/build/dokka/html/index.html` in a browser. Generated HTML stays in the ignored
+build directory; source KDoc, the overview and pinned generator configuration belong in
+Git. After the first dependency download, the same task works with `--offline`. Dokka
+does not fetch external API indexes, so dependency types may appear without external
+documentation links. Undocumented public declarations and generation warnings fail
+the documentation task. Android framework members inherited unchanged are omitted.
+
+In Android Studio, use **Quick Documentation** on a declaration to read its KDoc.
+The HTML is generated locally; documentation publication and hosting are separate work.
+
+Official references: [KDoc](https://kotlinlang.org/docs/kotlin-doc.html),
+[Dokka Gradle tasks](https://kotlinlang.org/docs/dokka-gradle.html), and
+[module/package documentation](https://kotlinlang.org/docs/dokka-module-and-package-docs.html).
+
 ## Tests and CI
 
 Required check names: `build`, `lint`, `unit-tests`, `android-tests`. The workflow runs
 actual Gradle tasks on pull requests and main, with read-only permissions and pinned
 Action SHAs. Build also rebuilds clean outputs offline after warming dependencies.
-Lint includes Android lint (warnings fail) and formatting. Android tests launch the
-real activity, check rendered text and recreation, and inspect installed permissions
+Lint includes Android lint (warnings fail), formatting and Dokka HTML generation.
+Android tests launch the real activity, check rendered text and recreation, and inspect installed permissions
 on an API 33 Google APIs emulator in airplane mode. No APKs or signing material are
 published or uploaded. CI caches build tooling only.
 

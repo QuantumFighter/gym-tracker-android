@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.dokka)
 }
 
 android {
@@ -48,6 +49,21 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
+dokka {
+    moduleName.set("GymTracker")
+    dokkaPublications.html {
+        failOnWarning.set(true)
+        suppressInheritedMembers.set(true)
+        // Keep documentation generation usable with cached dependencies offline.
+        offlineMode.set(true)
+    }
+    dokkaSourceSets.configureEach {
+        includes.from(rootProject.file("docs/api/overview.md"))
+        reportUndocumented.set(true)
+        jdkVersion.set(17)
     }
 }
 

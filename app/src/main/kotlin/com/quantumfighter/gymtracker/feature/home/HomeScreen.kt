@@ -21,12 +21,24 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.quantumfighter.gymtracker.R
 
+/**
+ * Connects [HomeViewModel] to [HomeScreen] using lifecycle-aware state collection.
+ *
+ * @param homeViewModel State owner, supplied explicitly when the host manages construction;
+ * otherwise obtained from the current ViewModelStoreOwner.
+ */
 @Composable
 fun HomeRoute(homeViewModel: HomeViewModel = viewModel()) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
     HomeScreen(uiState)
 }
 
+/**
+ * Renders Home from caller-owned [uiState], without performing persistence or navigation.
+ *
+ * @param uiState Immutable presentation state to display.
+ * @param modifier Layout and semantics applied to the screen's scaffold.
+ */
 @Composable
 fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier) {
     Scaffold(modifier = modifier) { contentPadding ->
