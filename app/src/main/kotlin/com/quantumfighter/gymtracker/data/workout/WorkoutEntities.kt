@@ -1,5 +1,6 @@
 package com.quantumfighter.gymtracker.data.workout
 
+import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -23,6 +24,11 @@ internal data class WorkoutSessionEntity(
     val warmupAnchorMs: Long? = null,
     val restAnchorMs: Long? = null,
     val restDurationMs: Long = 0,
+    val sourceMembershipId: String? = null,
+    val finishedAt: Long? = null,
+    val finishedOffsetSeconds: Int? = null,
+    @ColumnInfo(defaultValue = "0") val warmdownElapsedMs: Long = 0,
+    val warmdownAnchorMs: Long? = null,
 )
 
 @Entity(tableName = "active_workout", foreignKeys = [ForeignKey(entity = WorkoutSessionEntity::class, parentColumns = ["id"], childColumns = ["sessionId"], onDelete = ForeignKey.RESTRICT)], indices = [Index(value = ["sessionId"], unique = true)])
@@ -35,6 +41,7 @@ internal data class SessionExerciseEntity(
     val sourceOccurrenceId: String?,
     val ordinal: Int,
     @Embedded(prefix = "snapshot_") val definition: Exercise,
+    @ColumnInfo(defaultValue = "'PENDING'") val status: String = "PENDING",
 )
 
 @Entity(tableName = "session_prescriptions", foreignKeys = [ForeignKey(entity = SessionExerciseEntity::class, parentColumns = ["id"], childColumns = ["exerciseId"], onDelete = ForeignKey.RESTRICT)], indices = [Index(value = ["exerciseId", "ordinal"], unique = true)])

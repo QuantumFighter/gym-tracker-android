@@ -67,3 +67,10 @@ measurement meaning independently of catalogue and plan changes.
 Warm-up, arbitrary exercise selection and a minimal recorder. The ViewModel owns
 best-effort drafts, save serialization and explicit errors; saved tables observe
 Room. A display ticker reads persisted monotonic anchors without writing ticks.
+Exercise completion, warm-down/backtracking, optional timing and transactional
+corrections precede atomic finalisation/cursor advancement. Final records are read-only.
+
+# Package com.quantumfighter.gymtracker.feature.history
+
+Lifecycle-aware finished-session list and read-only details. All displayed results,
+statuses, prescriptions, units and exercise metadata come from session snapshots.

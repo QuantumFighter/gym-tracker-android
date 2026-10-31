@@ -24,7 +24,7 @@ import com.quantumfighter.gymtracker.data.workout.WorkoutSessionEntity
 /** Explicit additive migrations preserve catalogue rows; unsupported versions never reset storage. */
 @Database(
     entities = [ExerciseEntity::class, ProgramEntity::class, RoutineEntity::class, ProgramRoutineEntity::class, RoutineExerciseEntity::class, SetPrescriptionEntity::class, AppSettingsEntity::class, WorkoutSessionEntity::class, ActiveWorkoutEntity::class, SessionExerciseEntity::class, SessionPrescriptionEntity::class, RecordedSetEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(ExerciseConverters::class)
@@ -35,6 +35,19 @@ internal abstract class GymDatabase : RoomDatabase() {
 
     companion object {
         const val NAME = "gym-tracker.db"
+
+        /** Adds lifecycle fields without rebuilding or deleting session-owned records. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE workout_sessions ADD COLUMN sourceMembershipId TEXT")
+                db.execSQL("ALTER TABLE workout_sessions ADD COLUMN finishedAt INTEGER")
+                db.execSQL("ALTER TABLE workout_sessions ADD COLUMN finishedOffsetSeconds INTEGER")
+                db.execSQL("ALTER TABLE workout_sessions ADD COLUMN warmdownElapsedMs INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE workout_sessions ADD COLUMN warmdownAnchorMs INTEGER")
+                db.execSQL("ALTER TABLE session_exercises ADD COLUMN status TEXT NOT NULL DEFAULT 'PENDING'")
+                db.execSQL("UPDATE session_exercises SET status = 'PARTIAL' WHERE EXISTS (SELECT 1 FROM recorded_sets WHERE exerciseId = session_exercises.id)")
+            }
+        }
 
         /** Additive session-owned tables; existing catalogue and plan rows are never rewritten. */
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -72,7 +85,7 @@ internal abstract class GymDatabase : RoomDatabase() {
 
         fun build(context: Context, name: String = NAME): GymDatabase = Room.databaseBuilder(context.applicationContext, GymDatabase::class.java, name)
             .openHelperFactory(PreservingOpenHelperFactory())
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
     }
 }

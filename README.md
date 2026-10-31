@@ -1,10 +1,11 @@
 # Gym Tracker Android
 
-Current increment: B-04 / [Issue #10](https://github.com/QuantumFighter/gym-tracker-android/issues/10),
-authorised on 31 October 2026 after B-03 merged. Start a saved routine, warm up,
-record sets in any exercise order and resume committed work after interruption.
-See [B-04 verification](docs/verification/B-04.md). The older authorisation notes
-below are historical. Workout finalisation and history remain B-05.
+Current increment: B-05 / [Issue #11](https://github.com/QuantumFighter/gym-tracker-android/issues/11),
+authorised on 31 October 2026 after B-04 merged. Complete exercises, enter optional
+warm-down, correct saved sets before Finish, and retrieve read-only session history.
+Finish and next-routine advancement commit atomically; Abandon retains saved work
+without advancing. See [B-05 verification](docs/verification/B-05.md).
+The older authorisation notes below are historical. B-06 and later remain outside scope.
 
 Approved planning baseline • 30 October 2026 • **B-01 (#7) implementation authorised on 31 October 2026. Other stories remain unauthorised.**
 

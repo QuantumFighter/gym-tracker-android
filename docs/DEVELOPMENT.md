@@ -1,5 +1,64 @@
 # Android foundation (B-01)
 
+## Completion and history (B-05)
+
+The owner authorised Issue #11 only on 31 October 2026, following merged B-04.
+This section supersedes earlier increment boundaries below. B-06 is not implemented.
+
+Complete Exercise explicitly completes an exercise with saved sets and returns to
+selection. Complete is labelled and struck through; revisiting permits corrections
+or additional recording. An additional new set reopens that exercise as Partial.
+Saved-set corrections preserve explicit completion, set identity, units, original
+recording timestamp/order and timer state. Optimistic comparison rejects stale edits;
+failed writes retain previous saved values and the visible correction draft.
+
+Warm Down is available from warm-up, selection, recording, Details and the correction
+dialog. Pending work requires confirmation, rechecked in the repository transaction.
+Confirmed warm-down cancels rest, pauses new sets and marks unfinished exercises
+Partial if they have sets, otherwise Skipped. Saved-set corrections remain available.
+Return to Recording restores Skipped to Not started, retains Partial/Complete and
+every saved set. The optional count-up timer accumulates across warm-down visits.
+Like B-04 timing, it assumes the same boot; reboot/alerts remain B-06.
+
+Finish Workout is separate and requires warm-down. A single Room transaction marks
+the session FINISHED with UTC completion time and offset, stops warm-down timing,
+advances the source program's ordered routine membership (with wrap), and clears the
+active reference. Repeating Finish for that session is a read-only success, including
+after another workout starts. Save/correction commands serialize with finalisation;
+late new writes are rejected. A known committed Save UUID may return its original
+receipt after Finish without writing. Any failed transaction leaves the active
+session, cursor and history unchanged. Abandon preserves sets/statuses and clears
+the active reference in one transaction without advancing the cursor.
+
+Home → Workout history lists finished sessions and opens read-only session-owned
+names, prescriptions, load meaning, units, dates, sets and exercise statuses. No
+current routine/catalogue values are used to render history. Abandoned sessions
+remain in storage; the minimal history list includes finished workouts only.
+
+Schema v4 adds session completion/warm-down fields, source membership lineage and
+exercise status. MIGRATION_3_4 uses ALTER TABLE, derives existing Partial status from
+saved sets, and preserves every v3 field/row. v1/v2 migrations remain registered.
+Existing v3 sessions lack membership lineage: finalisation resolves the matching
+routine within its source program, preferring the currently selected matching
+membership. B-03 creates distinct routines, so this covers existing supported data.
+New sessions snapshot the exact membership, including manual routine choices.
+
+`WorkoutFinishDatabaseTest` exercises transactional failure, concurrency, corrections,
+cursor wrapping and v3 migration. `WorkoutFinishUiTest` demonstrates the M1 workflow
+and early ending through Compose with real Room. Its `finishPhase=seed/verify`
+arguments support separate process verification. Run
+`python scripts/verify_finish_abrupt_kill.py` with `ADB` set when needed: it performs
+the manual M1 workflow, waits for Finish acknowledgement with Room open, force-stops
+that PID without cleanup, and reads the original history through Home in a fresh
+process. Set `FINISH_TEST` to
+`com.quantumfighter.gymtracker.WorkoutFinishUiTest#t06WarmdownBeforeFinishSurvivesProcessDeath`,
+`FINISH_PHASE_KEY=warmdownPhase` and `FINISH_MARKER=b05-pending` to run the corresponding
+pre-Finish warm-down kill/recovery test. It resumes the same session, corrects a set,
+restores pending work and then finishes. Both isolated synthetic fixtures run in CI.
+These checks cover interruption before Finish and after its acknowledgement, not
+every possible mid-commit kill timing.
+Executed checks and device evidence are in [B-05 verification](verification/B-05.md).
+
 B-04 is authorised by the owner's 31 October 2026 instruction for Issue #10.
 B-01 through B-03 are merged. The dated boundaries below describe those earlier
 increments; B-05 and later implementation remain outside this change.
