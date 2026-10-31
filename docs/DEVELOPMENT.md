@@ -97,6 +97,13 @@ it with every database change. Android tests validate schema v1 using the commit
 asset and `MigrationTestHelper`, reopen a real file, check constraints and seed rollback.
 After building, `git diff --exit-code -- app/schemas` must be clean. CI enforces this.
 No migration is needed from B-01, which had no database. Never use destructive fallback.
+The production open-helper factory also replaces SQLite's default corruption callback
+and disables lossy open recovery; missing migrations and corruption are distinct paths.
+Corruption fails into Home's error state without automatically resetting storage.
+Android regressions cover actual corrupted-file open/retry and callback sidecar
+preservation. Relaunch phases use an isolated database with a custom sentinel and
+modified/archived built-in metadata, checking raw persisted rows before any seeding;
+a negative test proves that database loss with retained preferences fails verification.
 
 ## API documentation
 

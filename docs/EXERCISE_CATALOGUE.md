@@ -84,6 +84,18 @@ has no destructive migration fallback and no main-thread-query allowance. Failed
 show a generic retry state without logging payloads or deleting the file. Full damaged
 storage recovery/export UX remains B-07 and later portability work.
 
+Corruption is a separate path from missing migrations. `PreservingOpenHelperFactory`
+replaces the [default deleting corruption callback](https://developer.android.com/reference/androidx/sqlite/db/SupportSQLiteOpenHelper.Callback#onCorruption(androidx.sqlite.db.SupportSQLiteDatabase)),
+forwards Room's ordinary lifecycle callbacks and explicitly disables
+`allowDataLossOnRecovery`. On corruption it throws a non-SQLite exception without
+calling the default handler or closing/checkpointing/deleting/renaming database files.
+This also excludes the helper's SQLiteException-based delete-and-retry recovery path.
+The error reaches Home's existing error/retry state. The UI states that automatic reset
+is disabled; it does not promise that already damaged content remains intact.
+This prevents automatic reset; it does not repair corruption or guarantee recovery
+from filesystem/hardware loss. Tests exercise a real corrupt-file Room open and retry,
+plus byte preservation of main/WAL/SHM/journal fixtures through the installed callback.
+
 ## Sources and licensing
 
 Names identify common movements. Descriptions, metadata selection and tag assignments

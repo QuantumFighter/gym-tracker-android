@@ -116,9 +116,9 @@ jobs:
             ./gradlew :app:connectedDebugAndroidTest
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-            adb shell am instrument -w -e class com.quantumfighter.gymtracker.CatalogueRelaunchTest -e cataloguePhase seed com.quantumfighter.gymtracker.debug.test/androidx.test.runner.AndroidJUnitRunner | tee /tmp/catalogue-seed.txt
+            adb shell am instrument -w -e class 'com.quantumfighter.gymtracker.CatalogueRelaunchTest#t01ApplicationCatalogueSurvivesProcessRelaunchOffline' -e cataloguePhase seed com.quantumfighter.gymtracker.debug.test/androidx.test.runner.AndroidJUnitRunner | tee /tmp/catalogue-seed.txt
             grep -q 'OK (1 test)' /tmp/catalogue-seed.txt
             adb shell am force-stop com.quantumfighter.gymtracker.debug
             adb shell am start -W -n com.quantumfighter.gymtracker.debug/com.quantumfighter.gymtracker.MainActivity
-            adb shell am instrument -w -e class com.quantumfighter.gymtracker.CatalogueRelaunchTest -e cataloguePhase verify com.quantumfighter.gymtracker.debug.test/androidx.test.runner.AndroidJUnitRunner | tee /tmp/catalogue-relaunch.txt
+            adb shell am instrument -w -e class 'com.quantumfighter.gymtracker.CatalogueRelaunchTest#t01ApplicationCatalogueSurvivesProcessRelaunchOffline' -e cataloguePhase verify com.quantumfighter.gymtracker.debug.test/androidx.test.runner.AndroidJUnitRunner | tee /tmp/catalogue-relaunch.txt
             grep -q 'OK (1 test)' /tmp/catalogue-relaunch.txt

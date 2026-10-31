@@ -10,6 +10,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.quantumfighter.gymtracker.data.exercise.BuiltInCatalogue
 import com.quantumfighter.gymtracker.data.exercise.ExerciseRepository
 import com.quantumfighter.gymtracker.data.exercise.GymDatabase
+import com.quantumfighter.gymtracker.data.exercise.PreservedDatabaseCorruptionException
 import com.quantumfighter.gymtracker.data.exercise.toEntity
 import com.quantumfighter.gymtracker.domain.ExerciseOrigin
 import com.quantumfighter.gymtracker.feature.home.HomeViewModel
@@ -17,12 +18,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.After
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.RandomAccessFile
 
 /** T-01 failure subset: real repository failure reaches Home; retry retains committed records. */
 @RunWith(AndroidJUnit4::class)
@@ -67,5 +70,33 @@ class HomeCatalogueTest {
         val recovered = withTimeout(10_000) { home.uiState.first { !it.catalogueLoading } }
         assertFalse(recovered.catalogueFailed)
         assertEquals(6, database.exerciseDao().all().size)
+    }
+
+    @Test
+    fun corruptFileInvokesPreservingCallbackAndHomeRetryNeverReplacesIt() = runBlocking {
+        ExerciseRepository(database).seedCatalogue()
+        database.close()
+        val file = context.getDatabasePath(name)
+        RandomAccessFile(file, "rw").use { it.write("Broken SQLite!!!".toByteArray()) }
+        val damagedBytes = file.readBytes()
+        database = GymDatabase.build(context, name)
+        val repository = ExerciseRepository(database)
+        // This exception can only originate in our corruption callback, reached by real SQLite open.
+        val failure = runCatching { repository.seedCatalogue() }.exceptionOrNull()
+        assertTrue("Real SQLite corruption callback invoked", failure is PreservedDatabaseCorruptionException)
+        assertArrayEquals(damagedBytes, file.readBytes())
+
+        lateinit var home: HomeViewModel
+        instrumentation.runOnMainSync {
+            home = ViewModelProvider.create(
+                store,
+                viewModelFactory { initializer { HomeViewModel(repository) } },
+            )[HomeViewModel::class]
+        }
+        assertTrue(withTimeout(10_000) { home.uiState.first { !it.catalogueLoading } }.catalogueFailed)
+        instrumentation.runOnMainSync { home.retryCatalogue() }
+        assertTrue(withTimeout(10_000) { home.uiState.first { !it.catalogueLoading } }.catalogueFailed)
+        assertTrue(file.isFile)
+        assertArrayEquals(damagedBytes, file.readBytes())
     }
 }

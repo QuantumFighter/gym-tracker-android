@@ -15,6 +15,8 @@ internal abstract class GymDatabase : RoomDatabase() {
     companion object {
         const val NAME = "gym-tracker.db"
 
-        fun build(context: Context, name: String = NAME): GymDatabase = Room.databaseBuilder(context.applicationContext, GymDatabase::class.java, name).build()
+        fun build(context: Context, name: String = NAME): GymDatabase = Room.databaseBuilder(context.applicationContext, GymDatabase::class.java, name)
+            .openHelperFactory(PreservingOpenHelperFactory())
+            .build()
     }
 }
