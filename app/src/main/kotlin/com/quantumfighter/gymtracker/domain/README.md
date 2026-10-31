@@ -5,5 +5,6 @@ observed times and immutable data; rules must not import Android, Compose, repos
 Room or feature UI. JUnit tests run without an emulator. Ordinary repository operations
 do not need use-case wrappers.
 
-B-01 implements no workout policy. Add rules alongside their authorised stories, with
-boundary cases. The JVM architecture checks enforce these dependency directions now.
+B-02 adds the validated `Exercise` value model and measurement/load/origin tokens.
+Its recording eligibility excludes archived and non-repetition definitions. There is
+no workout or progression policy. JVM architecture checks enforce dependency direction.

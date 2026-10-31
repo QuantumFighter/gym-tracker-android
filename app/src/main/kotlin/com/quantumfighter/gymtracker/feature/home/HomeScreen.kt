@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,19 +19,17 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.quantumfighter.gymtracker.R
 
 /**
  * Connects [HomeViewModel] to [HomeScreen] using lifecycle-aware state collection.
  *
- * @param homeViewModel State owner, supplied explicitly when the host manages construction;
- * otherwise obtained from the current ViewModelStoreOwner.
+ * @param homeViewModel State owner constructed by the application composition root.
  */
 @Composable
-fun HomeRoute(homeViewModel: HomeViewModel = viewModel()) {
+fun HomeRoute(homeViewModel: HomeViewModel) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(uiState)
+    HomeScreen(uiState, onRetryCatalogue = homeViewModel::retryCatalogue)
 }
 
 /**
@@ -38,9 +37,10 @@ fun HomeRoute(homeViewModel: HomeViewModel = viewModel()) {
  *
  * @param uiState Immutable presentation state to display.
  * @param modifier Layout and semantics applied to the screen's scaffold.
+ * @param onRetryCatalogue Requests another non-destructive storage initialisation attempt.
  */
 @Composable
-fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier) {
+fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onRetryCatalogue: () -> Unit = {}) {
     Scaffold(modifier = modifier) { contentPadding ->
         Column(
             modifier = Modifier
@@ -59,6 +59,13 @@ fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier) {
                 text = stringResource(R.string.foundation_message),
                 style = MaterialTheme.typography.bodyLarge,
             )
+            if (uiState.catalogueLoading) {
+                Text(stringResource(R.string.catalogue_loading))
+            }
+            if (uiState.catalogueFailed) {
+                Text(stringResource(R.string.catalogue_failed))
+                Button(onClick = onRetryCatalogue) { Text(stringResource(R.string.retry)) }
+            }
         }
     }
 }

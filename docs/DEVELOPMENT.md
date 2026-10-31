@@ -73,11 +73,37 @@ ViewModel, immutable screen state and rendering, and `ui/theme/` owns Material s
 state directly and `HomeRoute` accepts an explicit ViewModel for tests; future real
 repositories enter ViewModel constructors and are wired manually at the root.
 
-`data/` and `domain/` contain boundary guidance, deliberately no dummy implementations.
-There is no persistent product data or domain policy in B-01. JVM policy tests enforce
-dependency direction and manifest privacy. Room/KSP, schema v1 and real repository/DAO
-tests belong with B-02's first actual persistence model. Progression, clocks/timers,
-programs, catalogue, recording and history are not implemented here.
+B-02 adds Room 2.8.5 (runtime/compiler/plugin/testing) and KSP 2.3.13, retaining the
+existing toolchain pins. `GymTrackerApplication` owns one lazy database/repository;
+the composition root injects `ExerciseRepository` into Home's ViewModel. Home seeds
+off the main thread, preserving the B-01 screen and showing loading/retry when needed.
+`data/exercise/` owns schema v1, DAO, seeding and recording-selection guards; `domain/`
+owns validated exercise values. See [Catalogue](EXERCISE_CATALOGUE.md) for all metadata,
+licensing, load semantics and the schema contract. Programs, routines, recording,
+history and progression remain later work.
+
+The serialization **runtime family** is aligned with BOM 1.12.0 (stable, based on
+Kotlin 2.4.10) while the compiler plugin remains Kotlin 2.4.21. Device schema testing
+exposed AGP's app/test consistent resolution retaining app core 1.7.3 alongside
+Room testing JSON 1.8.1, causing `GeneratedSerializer.typeParametersSerializers()`
+`AbstractMethodError`. The BOM aligns both APKs without resolution forces or changing
+the build toolchain. See the official [serialization release](https://github.com/Kotlin/kotlinx.serialization/releases/tag/v1.12.0).
+
+The actual merged B-01 version catalogue pins AGP **9.5.0**, despite the older table/
+report describing 9.3.1. B-02 preserves 9.5.0; no toolchain upgrade is made here.
+
+Room's Gradle plugin exports compiler-generated schema JSON to `app/schemas/`; commit
+it with every database change. Android tests validate schema v1 using the committed
+asset and `MigrationTestHelper`, reopen a real file, check constraints and seed rollback.
+After building, `git diff --exit-code -- app/schemas` must be clean. CI enforces this.
+No migration is needed from B-01, which had no database. Never use destructive fallback.
+The production open-helper factory also replaces SQLite's default corruption callback
+and disables lossy open recovery; missing migrations and corruption are distinct paths.
+Corruption fails into Home's error state without automatically resetting storage.
+Android regressions cover actual corrupted-file open/retry and callback sidecar
+preservation. Relaunch phases use an isolated database with a custom sentinel and
+modified/archived built-in metadata, checking raw persisted rows before any seeding;
+a negative test proves that database loss with retained preferences fails verification.
 
 ## API documentation
 
@@ -113,8 +139,11 @@ Required check names: `build`, `lint`, `unit-tests`, `android-tests`. The workfl
 actual Gradle tasks on pull requests and main, with read-only permissions and pinned
 Action SHAs. Build also rebuilds clean outputs offline after warming dependencies.
 Lint includes Android lint (warnings fail), formatting and Dokka HTML generation.
-Android tests launch the real activity, check rendered text and recreation, and inspect installed permissions
-on an API 33 Google APIs emulator in airplane mode. No APKs or signing material are
+Android tests run the Room seeding/constraints/reopen/schema/failure suite, verify Home
+retry state, launch the real activity, check rendered text/recreation and inspect
+installed permissions on an API 33 Google APIs emulator in airplane mode. A separate
+seed/force-stop/launcher/verify sequence compares the entire catalogue across processes.
+Build checks that compiler output matches the committed schema. No APKs or signing material are
 published or uploaded. CI caches build tooling only.
 
 Only lint's `AndroidGradlePluginVersion` update advisory is disabled: it otherwise fails

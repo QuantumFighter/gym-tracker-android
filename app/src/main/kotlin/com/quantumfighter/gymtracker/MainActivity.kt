@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.quantumfighter.gymtracker.app.GymTrackerApp
+import com.quantumfighter.gymtracker.app.GymTrackerApplication
 
 /** Android launcher that hosts [GymTrackerApp] and delegates screen rendering to Compose. */
 class MainActivity : ComponentActivity() {
@@ -12,6 +13,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { GymTrackerApp() }
+        val exercises = (application as GymTrackerApplication).exercises
+        setContent { GymTrackerApp(exercises) }
     }
 }

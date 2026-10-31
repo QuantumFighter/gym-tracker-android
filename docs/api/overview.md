@@ -7,9 +7,9 @@ using Compose, Material 3, Navigation 3 and lifecycle-aware ViewModel state.
 `HomeRoute` collects the ViewModel's read-only state and passes it to `HomeScreen`.
 Rendering receives immutable state and does not access storage.
 
-The `data` and `domain` directories currently describe ownership boundaries only.
-No repository, database schema, catalogue or workout policy is implemented in B-01.
-Future authorised stories add their API contracts and KDoc alongside their code.
+B-02 adds an application-owned Room database, an exercise repository and a validated
+pure Kotlin exercise model. Home prepares the catalogue through the repository and
+shows a retry state when storage is unavailable. No workout policy is implemented.
 Product decisions and development instructions remain in the repository's `docs` directory.
 
 # Package com.quantumfighter.gymtracker
@@ -31,3 +31,14 @@ Explicit route parameters and state-driven rendering provide injection seams for
 # Package com.quantumfighter.gymtracker.ui.theme
 
 Shared Material 3 theme that follows the system's light or dark appearance.
+
+# Package com.quantumfighter.gymtracker.data.exercise
+
+Offline exercise catalogue repository; internal Room schema, DAO and original built-in
+definitions. Atomic seeding retains stored identities and metadata. Recording access
+rejects archived and unsupported measurement definitions.
+
+# Package com.quantumfighter.gymtracker.domain
+
+Android-independent exercise value model, required-metadata validation and explicit
+measurement, load and ownership conventions.
