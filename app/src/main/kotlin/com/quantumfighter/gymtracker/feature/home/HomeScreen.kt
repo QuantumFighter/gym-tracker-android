@@ -30,9 +30,9 @@ import com.quantumfighter.gymtracker.R
  * @param homeViewModel State owner constructed by the application composition root.
  */
 @Composable
-internal fun HomeRoute(homeViewModel: HomeViewModel, onPrograms: () -> Unit) {
+internal fun HomeRoute(homeViewModel: HomeViewModel, onPrograms: () -> Unit, onWorkout: (String?) -> Unit = {}, hasActive: Boolean = false, recordingAvailable: Boolean = false) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(uiState, onRetryCatalogue = homeViewModel::retryCatalogue, onPrograms = onPrograms, onSelectRoutine = homeViewModel::selectRoutine)
+    HomeScreen(uiState, onRetryCatalogue = homeViewModel::retryCatalogue, onPrograms = onPrograms, onSelectRoutine = homeViewModel::selectRoutine, onWorkout = onWorkout, hasActive = hasActive, recordingAvailable = recordingAvailable)
 }
 
 /**
@@ -43,7 +43,7 @@ internal fun HomeRoute(homeViewModel: HomeViewModel, onPrograms: () -> Unit) {
  * @param onRetryCatalogue Requests another non-destructive storage initialisation attempt.
  */
 @Composable
-internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onRetryCatalogue: () -> Unit = {}, onPrograms: () -> Unit = {}, onSelectRoutine: (String) -> Unit = {}) {
+internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onRetryCatalogue: () -> Unit = {}, onPrograms: () -> Unit = {}, onSelectRoutine: (String) -> Unit = {}, onWorkout: (String?) -> Unit = {}, hasActive: Boolean = false, recordingAvailable: Boolean = false) {
     var choosing by rememberSaveable { mutableStateOf(false) }
     Scaffold(modifier = modifier) { contentPadding ->
         Column(
@@ -66,6 +66,7 @@ internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onR
             if (uiState.catalogueLoading) {
                 Text(stringResource(R.string.catalogue_loading))
             }
+            if (hasActive) Button(onClick = { onWorkout(null) }) { Text("Resume workout") }
             if (uiState.catalogueFailed) {
                 Text(stringResource(R.string.catalogue_failed))
                 Button(onClick = onRetryCatalogue) { Text(stringResource(R.string.retry)) }
@@ -78,7 +79,7 @@ internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onR
                     Text("Next workout", style = MaterialTheme.typography.titleMedium)
                     Text(next.name, style = MaterialTheme.typography.titleLarge)
                     Text("${next.exercises.size} exercises · ${next.exercises.sumOf { it.sets.size }} prescribed sets")
-                    Text("Routine saved and ready. Workout recording is available in a later update.")
+                    if (recordingAvailable && !hasActive) Button(onClick = { onWorkout(next.membershipId) }) { Text("Record Workout") }
                 }
                 Button(onClick = onPrograms) { Text("Programs") }
                 if (uiState.library.programs.any { it.routines.isNotEmpty() }) {

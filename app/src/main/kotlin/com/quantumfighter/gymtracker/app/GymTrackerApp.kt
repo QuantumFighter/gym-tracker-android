@@ -1,6 +1,7 @@
 package com.quantumfighter.gymtracker.app
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -10,10 +11,13 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.quantumfighter.gymtracker.data.exercise.ExerciseRepository
 import com.quantumfighter.gymtracker.data.program.ProgramRepository
+import com.quantumfighter.gymtracker.data.workout.WorkoutRepository
 import com.quantumfighter.gymtracker.feature.home.HomeRoute
 import com.quantumfighter.gymtracker.feature.home.HomeViewModel
 import com.quantumfighter.gymtracker.feature.programs.ProgramsRoute
 import com.quantumfighter.gymtracker.feature.programs.ProgramsViewModel
+import com.quantumfighter.gymtracker.feature.workout.WorkoutRoute
+import com.quantumfighter.gymtracker.feature.workout.WorkoutViewModel
 import com.quantumfighter.gymtracker.ui.theme.GymTrackerTheme
 import kotlinx.serialization.Serializable
 
@@ -23,14 +27,19 @@ private data object Home : NavKey
 @Serializable
 private data object Programs : NavKey
 
+@Serializable
+private data object Workout : NavKey
+
 /**
  * Applies the app theme and owns Navigation 3, starting at Home.
  * @param exercises Application-owned catalogue repository injected into Home's ViewModel.
  * @param programs Shared-database plan repository injected into Home and Programs.
  */
 @Composable
-internal fun GymTrackerApp(exercises: ExerciseRepository, programs: ProgramRepository) {
+internal fun GymTrackerApp(exercises: ExerciseRepository, programs: ProgramRepository, workouts: WorkoutRepository? = null) {
     GymTrackerTheme {
+        val workoutModel: WorkoutViewModel? = if (workouts == null) null else viewModel(factory = viewModelFactory { initializer { WorkoutViewModel(workouts) } })
+        val workoutState = workoutModel?.uiState?.collectAsStateWithLifecycle()?.value
         val backStack = rememberNavBackStack(Home)
         NavDisplay(
             backStack = backStack,
@@ -39,13 +48,24 @@ internal fun GymTrackerApp(exercises: ExerciseRepository, programs: ProgramRepos
                     val homeViewModel: HomeViewModel = viewModel(
                         factory = viewModelFactory { initializer { HomeViewModel(exercises, programs) } },
                     )
-                    HomeRoute(homeViewModel, onPrograms = { backStack.add(Programs) })
+                    HomeRoute(homeViewModel, onPrograms = { backStack.add(Programs) }, onWorkout = { id ->
+                        if (id != null) workoutModel?.start(id)
+                        backStack.add(Workout)
+                    }, hasActive = workoutState?.workout != null, recordingAvailable = workoutModel != null)
                 }
                 entry<Programs> {
                     val programsViewModel: ProgramsViewModel = viewModel(
                         factory = viewModelFactory { initializer { ProgramsViewModel(programs, exercises) } },
                     )
-                    ProgramsRoute(programsViewModel, onHome = { backStack.removeLastOrNull() })
+                    ProgramsRoute(programsViewModel, onHome = { backStack.removeLastOrNull() }, onResumeWorkout = if (workoutState?.workout != null) ({ backStack.add(Workout) }) else null)
+                }
+                entry<Workout> {
+                    if (workoutModel != null) {
+                        WorkoutRoute(workoutModel, onHome = {
+                            backStack.clear()
+                            backStack.add(Home)
+                        })
+                    }
                 }
             },
         )

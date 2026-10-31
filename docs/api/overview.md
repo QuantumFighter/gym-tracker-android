@@ -55,3 +55,15 @@ Internal Room entities separate reusable routines from program membership.
 
 Lifecycle-aware plan lists, creation drafts and saved-routine details. ViewModels
 orchestrate repository operations; Compose renders state and user actions.
+
+# Package com.quantumfighter.gymtracker.data.workout
+
+Atomic session snapshots, singleton active-session reference and idempotent set
+commands. Room graphs own committed state; immutable exercise snapshots preserve
+measurement meaning independently of catalogue and plan changes.
+
+# Package com.quantumfighter.gymtracker.feature.workout
+
+Warm-up, arbitrary exercise selection and a minimal recorder. The ViewModel owns
+best-effort drafts, save serialization and explicit errors; saved tables observe
+Room. A display ticker reads persisted monotonic anchors without writing ticks.

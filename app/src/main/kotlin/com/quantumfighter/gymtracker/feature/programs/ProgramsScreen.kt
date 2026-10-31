@@ -31,7 +31,7 @@ import com.quantumfighter.gymtracker.domain.PreparedRoutine
 
 /** Minimal list → creation → saved-detail flow. All writes go through the ViewModel. */
 @Composable
-internal fun ProgramsRoute(viewModel: ProgramsViewModel, onHome: () -> Unit) {
+internal fun ProgramsRoute(viewModel: ProgramsViewModel, onHome: () -> Unit, onResumeWorkout: (() -> Unit)? = null) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val back = { if (!viewModel.back()) onHome() }
     BackHandler(onBack = back)
@@ -41,6 +41,7 @@ internal fun ProgramsRoute(viewModel: ProgramsViewModel, onHome: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             TextButton(onClick = back, enabled = !state.saving) { Text("Back") }
+            if (onResumeWorkout != null) Button(onClick = onResumeWorkout, enabled = !state.saving) { Text("Resume workout") }
             Text(
                 when {
                     state.choosingExercise -> "Choose exercise"
