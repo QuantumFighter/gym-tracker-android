@@ -1,6 +1,9 @@
 package com.quantumfighter.gymtracker
 
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
@@ -37,12 +40,23 @@ class ProgramUiTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val name = "b03-ui-test.db"
     private lateinit var database: GymDatabase
+    private var dismissInput: () -> Unit = {}
 
     @Before
     fun start() {
         context.deleteDatabase(name)
         database = GymDatabase.build(context, name)
-        compose.setContent { GymTrackerApp(ExerciseRepository(database), ProgramRepository(database)) }
+        compose.setContent {
+            val focus = LocalFocusManager.current
+            val keyboard = LocalSoftwareKeyboardController.current
+            SideEffect {
+                dismissInput = {
+                    focus.clearFocus()
+                    keyboard?.hide()
+                }
+            }
+            GymTrackerApp(ExerciseRepository(database), ProgramRepository(database))
+        }
         compose.waitUntil(10_000) { compose.onAllNodes(hasText("Programs")).fetchSemanticsNodes().isNotEmpty() }
     }
 
@@ -136,6 +150,8 @@ class ProgramUiTest {
     private fun field(index: Int, label: String) = scoped(index, label)
     private fun scoped(index: Int, text: String) = compose.onNode(hasText(text) and hasAnyAncestor(hasTestTag("draftExercise$index")))
     private fun click(text: String) {
+        // Prevent IME/focused-field scrolling from obscuring validation on the smaller CI phone.
+        compose.runOnIdle { dismissInput() }
         compose.onNodeWithText(text).performScrollTo().performClick()
     }
     private fun input(label: String, value: String) {
