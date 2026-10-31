@@ -113,7 +113,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
             adb shell cmd connectivity airplane-mode enable
-            ./gradlew :app:connectedDebugAndroidTest
+            ./gradlew :app:connectedDebugAndroidTest || { cat app/build/outputs/androidTest-results/connected/debug/TEST-*.xml; exit 1; }
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
             adb shell am instrument -w -e class 'com.quantumfighter.gymtracker.CatalogueRelaunchTest#t01ApplicationCatalogueSurvivesProcessRelaunchOffline' -e cataloguePhase seed com.quantumfighter.gymtracker.debug.test/androidx.test.runner.AndroidJUnitRunner | tee /tmp/catalogue-seed.txt
