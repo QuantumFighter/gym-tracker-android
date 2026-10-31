@@ -198,12 +198,15 @@ class ProgramDatabaseTest {
         val expected = createV1Fixture()
         database = Room.databaseBuilder(context, GymDatabase::class.java, name)
             .openHelperFactory(PreservingOpenHelperFactory())
-            .addMigrations(object : Migration(1, 2) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    GymDatabase.MIGRATION_1_2.migrate(db)
-                    error("Synthetic interruption")
-                }
-            }).build()
+            .addMigrations(
+                object : Migration(1, 2) {
+                    override fun migrate(db: SupportSQLiteDatabase) {
+                        GymDatabase.MIGRATION_1_2.migrate(db)
+                        error("Synthetic interruption")
+                    }
+                },
+                GymDatabase.MIGRATION_2_3,
+            ).build()
         expectFailure<IllegalStateException> { database.exerciseDao().all() }
         database.close()
         SQLiteDatabase.openDatabase(context.getDatabasePath(name).path, null, SQLiteDatabase.OPEN_READONLY).use { original ->

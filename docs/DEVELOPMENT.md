@@ -1,5 +1,50 @@
 # Android foundation (B-01)
 
+B-04 is authorised by the owner's 31 October 2026 instruction for Issue #10.
+B-01 through B-03 are merged. The dated boundaries below describe those earlier
+increments; B-05 and later implementation remain outside this change.
+
+## Workout recording (B-04)
+
+Home's Record Workout starts the selected saved routine. Start during an active
+session resumes it. Home and Programs offer Resume workout. Start Warm-up persists
+a monotonic anchor; Stop Warm-up persists elapsed milliseconds and opens exercise
+selection. Exercises can be selected and revisited in any order. Recorded work is
+labelled Partial with its saved-set count, without an exercise-completion workflow.
+
+The recorder separates Room-backed saved rows from current draft controls. Weight
+accepts exact kg (three decimal places); blank and zero remain distinct. Prominent
+labelled controls step weight by 2.5 kg and reps by one; direct editing remains
+available. Working/warm-up set type is explicit. Details contains snapshot metadata
+and prescriptions. Compact manual rest uses the prescribed duration and a persisted
+monotonic anchor. Expiry only displays zero; alerts and advanced timer controls are
+B-06. Timer anchors currently assume the same boot; reboot recovery is unqualified.
+
+Room schema v3 adds five tables: workout_sessions, active_workout,
+session_exercises, session_prescriptions and recorded_sets. MIGRATION_2_3 creates
+only those tables/indexes; v1/v2 paths and the preserving open-helper remain active.
+Session creation copies the full exercise definition, ordered prescriptions, names,
+source identities and metric units in one transaction. There are no foreign keys
+from snapshots back to editable templates. Save commands validate against the
+session's immutable definition, serialize through Room transactions, retain UUIDs
+for unchanged retries and return only after commit. Unique command/sequence indexes
+provide a second guard. Same UUID with changed values is rejected. Global recording
+order preserves interleaving across exercise occurrences for later superset work.
+
+Drafts are best-effort ViewModel state, preserved across exercise switching but not
+promised across process death. Failed saves retain their draft and command ID.
+Saved sets recover from Room; no draft is promoted to a saved row by relaunch.
+Partial status is derived from saved rows. Recorded sets are free entries associated
+with a session exercise; no automatic prescription matching or round grouping is
+introduced. Session prescriptions remain separately available for comparison.
+
+Run WorkoutRelaunchTest with `-e workoutPhase seed`, force-stop the debug package,
+launch MainActivity, then run the same test with `-e workoutPhase verify`. The test
+compares the original complete session before seeding, retries the old command,
+and resumes through the real app's Home/navigation against an isolated synthetic
+database. CI runs this sequence as well as the full suite. See
+[B-04 verification](verification/B-04.md) for executed results and limitations.
+
 B-03 implementation is authorised by the owner's 31 October 2026 instruction for
 Issue #9 only. B-01/B-02 are merged; the planning handover's earlier setup-only
 statements are historical. B-04 and later stories remain outside this change.

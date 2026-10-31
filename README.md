@@ -1,5 +1,11 @@
 # Gym Tracker Android
 
+Current increment: B-04 / [Issue #10](https://github.com/QuantumFighter/gym-tracker-android/issues/10),
+authorised on 31 October 2026 after B-03 merged. Start a saved routine, warm up,
+record sets in any exercise order and resume committed work after interruption.
+See [B-04 verification](docs/verification/B-04.md). The older authorisation notes
+below are historical. Workout finalisation and history remain B-05.
+
 Approved planning baseline • 30 October 2026 • **B-01 (#7) implementation authorised on 31 October 2026. Other stories remain unauthorised.**
 
 A personal, local-first Android gym tracker designed around a minimal workout recording experience. The first functional milestone is to create a routine manually, record a complete workout and retrieve its persisted results offline.

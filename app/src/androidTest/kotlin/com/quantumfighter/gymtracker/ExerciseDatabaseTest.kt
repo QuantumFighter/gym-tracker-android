@@ -179,13 +179,13 @@ class ExerciseDatabaseTest {
         ExerciseRepository(database).seedCatalogue()
         database.close()
         SQLiteDatabase.openDatabase(context.getDatabasePath(name).path, null, SQLiteDatabase.OPEN_READWRITE).use {
-            it.version = 3
+            it.version = 4
         }
         database = GymDatabase.build(context, name)
         expectFailure<IllegalStateException> { database.exerciseDao().all() }
         database.close()
         SQLiteDatabase.openDatabase(context.getDatabasePath(name).path, null, SQLiteDatabase.OPEN_READONLY).use { original ->
-            assertEquals(3, original.version)
+            assertEquals(4, original.version)
             original.rawQuery("SELECT COUNT(*) FROM exercises", null).use {
                 assertTrue(it.moveToFirst())
                 assertEquals(6, it.getInt(0))

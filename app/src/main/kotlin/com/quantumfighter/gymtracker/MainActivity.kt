@@ -14,6 +14,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val container = application as GymTrackerApplication
-        setContent { GymTrackerApp(container.exercises, container.programs) }
+        setContent { GymTrackerApp(container.exercises, container.programs, container.workouts) }
     }
 }
