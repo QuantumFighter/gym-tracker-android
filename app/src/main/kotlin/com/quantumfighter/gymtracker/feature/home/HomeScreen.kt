@@ -30,9 +30,9 @@ import com.quantumfighter.gymtracker.R
  * @param homeViewModel State owner constructed by the application composition root.
  */
 @Composable
-internal fun HomeRoute(homeViewModel: HomeViewModel, onPrograms: () -> Unit, onWorkout: (String?) -> Unit = {}, hasActive: Boolean = false, recordingAvailable: Boolean = false) {
+internal fun HomeRoute(homeViewModel: HomeViewModel, onPrograms: () -> Unit, onWorkout: (String?) -> Unit = {}, hasActive: Boolean = false, recordingAvailable: Boolean = false, onHistory: (() -> Unit)? = null) {
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    HomeScreen(uiState, onRetryCatalogue = homeViewModel::retryCatalogue, onPrograms = onPrograms, onSelectRoutine = homeViewModel::selectRoutine, onWorkout = onWorkout, hasActive = hasActive, recordingAvailable = recordingAvailable)
+    HomeScreen(uiState, onRetryCatalogue = homeViewModel::retryCatalogue, onPrograms = onPrograms, onSelectRoutine = homeViewModel::selectRoutine, onWorkout = onWorkout, hasActive = hasActive, recordingAvailable = recordingAvailable, onHistory = onHistory)
 }
 
 /**
@@ -43,7 +43,7 @@ internal fun HomeRoute(homeViewModel: HomeViewModel, onPrograms: () -> Unit, onW
  * @param onRetryCatalogue Requests another non-destructive storage initialisation attempt.
  */
 @Composable
-internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onRetryCatalogue: () -> Unit = {}, onPrograms: () -> Unit = {}, onSelectRoutine: (String) -> Unit = {}, onWorkout: (String?) -> Unit = {}, hasActive: Boolean = false, recordingAvailable: Boolean = false) {
+internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onRetryCatalogue: () -> Unit = {}, onPrograms: () -> Unit = {}, onSelectRoutine: (String) -> Unit = {}, onWorkout: (String?) -> Unit = {}, hasActive: Boolean = false, recordingAvailable: Boolean = false, onHistory: (() -> Unit)? = null) {
     var choosing by rememberSaveable { mutableStateOf(false) }
     Scaffold(modifier = modifier) { contentPadding ->
         Column(
@@ -67,6 +67,7 @@ internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onR
                 Text(stringResource(R.string.catalogue_loading))
             }
             if (hasActive) Button(onClick = { onWorkout(null) }) { Text("Resume workout") }
+            if (onHistory != null) Button(onClick = onHistory) { Text("Workout history") }
             if (uiState.catalogueFailed) {
                 Text(stringResource(R.string.catalogue_failed))
                 Button(onClick = onRetryCatalogue) { Text(stringResource(R.string.retry)) }

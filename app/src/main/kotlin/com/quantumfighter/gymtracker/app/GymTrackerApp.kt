@@ -12,6 +12,8 @@ import androidx.navigation3.ui.NavDisplay
 import com.quantumfighter.gymtracker.data.exercise.ExerciseRepository
 import com.quantumfighter.gymtracker.data.program.ProgramRepository
 import com.quantumfighter.gymtracker.data.workout.WorkoutRepository
+import com.quantumfighter.gymtracker.feature.history.HistoryRoute
+import com.quantumfighter.gymtracker.feature.history.HistoryViewModel
 import com.quantumfighter.gymtracker.feature.home.HomeRoute
 import com.quantumfighter.gymtracker.feature.home.HomeViewModel
 import com.quantumfighter.gymtracker.feature.programs.ProgramsRoute
@@ -29,6 +31,9 @@ private data object Programs : NavKey
 
 @Serializable
 private data object Workout : NavKey
+
+@Serializable
+private data object History : NavKey
 
 /**
  * Applies the app theme and owns Navigation 3, starting at Home.
@@ -51,7 +56,7 @@ internal fun GymTrackerApp(exercises: ExerciseRepository, programs: ProgramRepos
                     HomeRoute(homeViewModel, onPrograms = { backStack.add(Programs) }, onWorkout = { id ->
                         if (id != null) workoutModel?.start(id)
                         backStack.add(Workout)
-                    }, hasActive = workoutState?.workout != null, recordingAvailable = workoutModel != null)
+                    }, hasActive = workoutState?.workout != null, recordingAvailable = workoutModel != null, onHistory = if (workouts != null) ({ backStack.add(History) }) else null)
                 }
                 entry<Programs> {
                     val programsViewModel: ProgramsViewModel = viewModel(
@@ -62,6 +67,15 @@ internal fun GymTrackerApp(exercises: ExerciseRepository, programs: ProgramRepos
                 entry<Workout> {
                     if (workoutModel != null) {
                         WorkoutRoute(workoutModel, onHome = {
+                            backStack.clear()
+                            backStack.add(Home)
+                        }, onHistory = { backStack.add(History) })
+                    }
+                }
+                entry<History> {
+                    if (workouts != null) {
+                        val model: HistoryViewModel = viewModel(factory = viewModelFactory { initializer { HistoryViewModel(workouts) } })
+                        HistoryRoute(model, onHome = {
                             backStack.clear()
                             backStack.add(Home)
                         })

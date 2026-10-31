@@ -21,6 +21,24 @@ internal interface WorkoutDao {
 
     @Update suspend fun updateSession(value: WorkoutSessionEntity)
 
+    @Update suspend fun updateExercise(value: SessionExerciseEntity)
+
+    @Update suspend fun updateSet(value: RecordedSetEntity)
+
+    @Query("DELETE FROM active_workout WHERE sessionId = :sessionId")
+    suspend fun clearActive(sessionId: String)
+
+    @Transaction
+    @Query("SELECT * FROM workout_sessions WHERE id = :id")
+    suspend fun session(id: String): WorkoutGraph?
+
+    @Query("SELECT * FROM workout_sessions WHERE state = 'FINISHED' ORDER BY finishedAt DESC, id")
+    fun observeHistory(): Flow<List<WorkoutSessionEntity>>
+
+    @Transaction
+    @Query("SELECT * FROM workout_sessions WHERE id = :id AND state = 'FINISHED'")
+    fun observeFinished(id: String): Flow<WorkoutGraph?>
+
     @Transaction
     @Query("SELECT * FROM workout_sessions WHERE id = (SELECT sessionId FROM active_workout WHERE id = 1)")
     suspend fun active(): WorkoutGraph?

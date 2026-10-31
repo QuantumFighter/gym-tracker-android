@@ -2,6 +2,7 @@ package com.quantumfighter.gymtracker.feature.workout
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.quantumfighter.gymtracker.data.workout.RecordedSetEntity
 import com.quantumfighter.gymtracker.data.workout.WorkoutGraph
 import com.quantumfighter.gymtracker.data.workout.WorkoutRepository
 import com.quantumfighter.gymtracker.domain.LoadInput
@@ -14,7 +15,7 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 internal data class SetDraft(val weight: String = "", val reps: String = "", val type: String = "WORKING", val commandId: String = UUID.randomUUID().toString())
-internal data class WorkoutUiState(val workout: WorkoutGraph? = null, val loading: Boolean = true, val loadFailed: Boolean = false, val saving: Boolean = false, val selected: String? = null, val drafts: Map<String, SetDraft> = emptyMap(), val error: String? = null, val acknowledgement: String? = null, val retryLabel: String? = null)
+internal data class WorkoutUiState(val workout: WorkoutGraph? = null, val loading: Boolean = true, val loadFailed: Boolean = false, val saving: Boolean = false, val selected: String? = null, val drafts: Map<String, SetDraft> = emptyMap(), val error: String? = null, val acknowledgement: String? = null, val retryLabel: String? = null, val confirmWarmdown: Boolean = false, val editing: RecordedSetEntity? = null, val correction: SetDraft? = null, val finishedId: String? = null)
 
 /** Drafts survive navigation in this ViewModel; only Room records are authoritative after process death. */
 internal class WorkoutViewModel(private val repository: WorkoutRepository) : ViewModel() {
@@ -45,7 +46,80 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
         }
     }
 
-    fun start(membershipId: String) = command("Could not start workout.", "Retry Start Workout") { repository.start(membershipId) }
+    fun start(membershipId: String) = command("Could not start workout.", "Retry Start Workout") {
+        repository.start(membershipId)
+        state.value = state.value.copy(finishedId = null, selected = null, drafts = emptyMap())
+    }
+    fun complete() {
+        val current = state.value
+        val session = current.workout?.session?.id ?: return
+        val exercise = current.selected ?: return
+        command("Could not complete exercise.", "Retry Complete Exercise") {
+            repository.complete(session, exercise)
+            state.value = state.value.copy(selected = null)
+        }
+    }
+    fun requestWarmdown() {
+        if (state.value.saving) return
+        if (state.value.workout?.exercises?.any { it.exercise.status != "COMPLETE" } == true) {
+            state.value = state.value.copy(confirmWarmdown = true)
+        } else {
+            enterWarmdown(false)
+        }
+    }
+    fun cancelWarmdown() {
+        state.value = state.value.copy(confirmWarmdown = false)
+    }
+    fun enterWarmdown(confirmed: Boolean) {
+        val id = state.value.workout?.session?.id ?: return
+        command("Could not enter warm-down.", "Retry Warm Down") {
+            repository.warmdown(id, confirmed)
+            state.value = state.value.copy(confirmWarmdown = false, selected = null, editing = null)
+        }
+    }
+    fun returnToRecording() {
+        val id = state.value.workout?.session?.id ?: return
+        command("Could not return to recording.", "Retry Return to Recording") {
+            repository.returnToRecording(id)
+            state.value = state.value.copy(selected = null)
+        }
+    }
+    fun warmdownTimer(start: Boolean) {
+        val id = state.value.workout?.session?.id ?: return
+        command("Could not update warm-down timer.", "Retry Warm-down Timer") { repository.warmdownTimer(id, start) }
+    }
+    fun finish() {
+        val id = state.value.workout?.session?.id ?: return
+        command("Could not finish workout. Your saved sets are retained.", "Retry Finish Workout") {
+            repository.finish(id)
+            state.value = state.value.copy(finishedId = id, selected = null, editing = null, acknowledgement = "Workout finished")
+        }
+    }
+    fun abandon() {
+        val id = state.value.workout?.session?.id ?: return
+        command("Could not abandon workout.", "Retry Abandon Workout") {
+            repository.abandon(id)
+            state.value = state.value.copy(selected = null, acknowledgement = "Workout abandoned. Saved sets retained.")
+        }
+    }
+    fun editSet(set: RecordedSetEntity?) {
+        if (state.value.saving) return
+        state.value = state.value.copy(editing = set, correction = set?.let { SetDraft(it.loadGrams?.let(LoadInput::formatKg).orEmpty(), it.repetitions.toString(), it.setType) }, error = null, retryLabel = null)
+        retryAction = null
+    }
+    fun editCorrection(draft: SetDraft) {
+        if (state.value.saving) return
+        state.value = state.value.copy(correction = draft, error = null, retryLabel = null)
+        retryAction = null
+    }
+    fun correct() {
+        val original = state.value.editing ?: return
+        val draft = state.value.correction ?: return
+        command("Could not correct set. Previous saved values are retained.", "Retry Correction") {
+            repository.correct(original, LoadInput.parseKg(draft.weight), draft.reps.toIntOrNull() ?: throw IllegalArgumentException("Enter positive whole repetitions."), draft.type)
+            state.value = state.value.copy(editing = null, correction = null, acknowledgement = "Correction saved")
+        }
+    }
     fun warmup(start: Boolean) = command(if (start) "Could not start warm-up." else "Could not stop warm-up.", if (start) "Retry Start Warm-up" else "Retry Stop Warm-up") { repository.warmup(start) }
     fun startRest() {
         val id = state.value.selected ?: return
