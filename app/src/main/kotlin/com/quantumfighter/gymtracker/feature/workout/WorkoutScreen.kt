@@ -62,6 +62,7 @@ internal fun WorkoutRoute(model: WorkoutViewModel, onHome: () -> Unit) {
                 Button(onClick = model::retry) { Text("Retry") }
             }
             state.error?.let { Text(it) }
+            state.retryLabel?.let { label -> Button(onClick = model::retryCommand, enabled = !state.saving) { Text(label) } }
             state.acknowledgement?.let { Text(it) }
             if (workout == null && !state.loading) Text("Choose a saved routine on Home.")
             if (workout != null && workout.session.state == "WARM_UP") {

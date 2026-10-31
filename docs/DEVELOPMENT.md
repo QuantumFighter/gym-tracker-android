@@ -45,6 +45,14 @@ and resumes through the real app's Home/navigation against an isolated synthetic
 database. CI runs this sequence as well as the full suite. See
 [B-04 verification](verification/B-04.md) for executed results and limitations.
 
+That original seed phase closes Room before force-stop. To test abrupt termination,
+run `python scripts/verify_workout_abrupt_kill.py` after installing both debug APKs
+(set `ADB` to the executable path if it is not on PATH). The host waits for an
+acknowledged UI save with Room open, kills the live process without cleanup, and
+verifies its isolated snapshot through the app composition in a fresh process.
+CI runs both tests. This does not exercise production-default-database selection,
+mid-transaction kill timing, reboot handling or automatic pending-draft recovery.
+
 B-03 implementation is authorised by the owner's 31 October 2026 instruction for
 Issue #9 only. B-01/B-02 are merged; the planning handover's earlier setup-only
 statements are historical. B-04 and later stories remain outside this change.

@@ -16,6 +16,10 @@ import com.quantumfighter.gymtracker.data.workout.WorkoutRepository
 import com.quantumfighter.gymtracker.domain.RoutineExerciseDraft
 import com.quantumfighter.gymtracker.domain.SaveSetCommand
 import com.quantumfighter.gymtracker.domain.SetTarget
+import com.quantumfighter.gymtracker.feature.workout.WorkoutRoute
+import com.quantumfighter.gymtracker.feature.workout.WorkoutViewModel
+import com.quantumfighter.gymtracker.ui.theme.GymTrackerTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -33,11 +37,14 @@ class WorkoutRelaunchTest {
         val phase = InstrumentationRegistry.getArguments().getString("workoutPhase")
         val name = "b04-relaunch-test.db"
         val prefs = context.getSharedPreferences("b04-relaunch-test", 0)
-        if (phase == null || phase == "seed") context.deleteDatabase(name)
+        val abrupt = phase == "abrupt"
+        val ready = java.io.File(context.filesDir, "b04-kill-ready")
+        val cleanup = java.io.File(context.filesDir, "b04-kill-cleanup")
+        if (phase == null || phase == "seed" || abrupt) context.deleteDatabase(name)
         val database = GymDatabase.build(context, name)
         try {
             val repository = WorkoutRepository(database)
-            if (phase == null || phase == "seed") {
+            if (phase == null || phase == "seed" || abrupt) {
                 ExerciseRepository(database).seedCatalogue()
                 val plans = ProgramRepository(database)
                 val member = plans.createRoutine(plans.createProgram("Recovery fixture"), "Recovery routine", BuiltInCatalogue.exercises.take(2).map { RoutineExerciseDraft(UUID.randomUUID().toString(), it.id, listOf(SetTarget(8, 12, null, 90))) })
@@ -47,6 +54,25 @@ class WorkoutRelaunchTest {
                     repository.save(SaveSetCommand(UUID.randomUUID().toString(), exercise.exercise.id, if (index == 0) 0 else 12345, 8 + index, "WORKING"))
                 }
                 assertTrue(prefs.edit().putString("snapshot", repository.active().toString()).commit())
+            }
+            if (abrupt) {
+                ready.delete()
+                cleanup.delete()
+                val model = WorkoutViewModel(repository)
+                compose.setContent { GymTrackerTheme { WorkoutRoute(model, {}) } }
+                compose.waitUntil(10_000) { model.uiState.value.workout != null }
+                val exerciseId = repository.active()!!.exercises.first().exercise.id
+                compose.runOnIdle { model.select(exerciseId) }
+                compose.onNodeWithText("Save Set").performScrollTo().performClick()
+                compose.waitUntil(10_000) { compose.onAllNodes(hasText("Set saved")).fetchSemanticsNodes().isNotEmpty() }
+                val snapshot = repository.active()!!
+                assertEquals(3, snapshot.exercises.sumOf { it.sets.size })
+                assertTrue(prefs.edit().putString("snapshot", snapshot.toString()).commit())
+                assertTrue(database.isOpen)
+                ready.writeText(android.os.Process.myPid().toString())
+                // Host must kill this still-running instrumentation process. No lifecycle/DB close first.
+                delay(120_000)
+                error("Host did not kill the open-database process within the deadline")
             }
             if (phase == "seed") return@runBlocking
             val expected = prefs.getString("snapshot", null)
@@ -61,15 +87,19 @@ class WorkoutRelaunchTest {
             compose.waitUntil(10_000) { compose.onAllNodes(hasText("Resume workout")).fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("Resume workout").performScrollTo().performClick()
             val name = active.exercises.single { it.exercise.id == saved.exerciseId }.exercise.definition.name
-            compose.onNodeWithText("$name · Partial · 1 saved").performScrollTo().performClick()
+            val count = active.exercises.single { it.exercise.id == saved.exerciseId }.sets.size
+            compose.onNodeWithText("$name · Partial · $count saved").performScrollTo().performClick()
             compose.waitUntil(10_000) { compose.onAllNodes(hasText("Saved sets")).fetchSemanticsNodes().isNotEmpty() }
-            assertEquals(2, repository.active()!!.exercises.sumOf { it.sets.size })
+            assertEquals(active.exercises.sumOf { it.sets.size }, repository.active()!!.exercises.sumOf { it.sets.size })
         } finally {
+            if (abrupt) cleanup.writeText("Orderly cleanup ran")
             compose.activityRule.scenario.close()
             database.close()
             if (phase != "seed") {
                 context.deleteDatabase(name)
                 prefs.edit().clear().commit()
+                ready.delete()
+                cleanup.delete()
             }
         }
     }

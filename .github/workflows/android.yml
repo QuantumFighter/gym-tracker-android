@@ -134,3 +134,4 @@ jobs:
             adb shell am start -W -n com.quantumfighter.gymtracker.debug/com.quantumfighter.gymtracker.MainActivity
             adb shell am instrument -w -e class 'com.quantumfighter.gymtracker.WorkoutRelaunchTest#t06CommittedSetsSurviveProcessDeathAndRetry' -e workoutPhase verify com.quantumfighter.gymtracker.debug.test/androidx.test.runner.AndroidJUnitRunner | tee /tmp/workout-relaunch.txt
             grep -q 'OK (1 test)' /tmp/workout-relaunch.txt
+            python3 scripts/verify_workout_abrupt_kill.py

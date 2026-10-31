@@ -110,6 +110,22 @@ class WorkoutDatabaseTest {
         assertEquals(1, repository.active()!!.exercises.sumOf { it.sets.size })
     }
 
+    @Test fun t02LostCommitReplyCanRetryKnownCommandWithoutDuplicating() = runBlocking {
+        repository.start(prepare())
+        repository.warmup(false)
+        val id = repository.active()!!.exercises.first().exercise.id
+        val command = SaveSetCommand(UUID.randomUUID().toString(), id, 12345, 8, "WORKING")
+        // Simulate an interrupted caller after commit but before delivery of its successful result.
+        val outcome = runCatching {
+            repository.save(command)
+            throw java.io.IOException("Synthetic lost reply")
+        }
+        assertTrue(outcome.isFailure)
+        val committed = repository.active()!!.exercises.flatMap { it.sets }.single()
+        assertEquals(committed, repository.save(command))
+        assertEquals(listOf(committed), repository.active()!!.exercises.flatMap { it.sets })
+    }
+
     @Test fun t02InvalidSnapshotRollsBackEntireSessionAndDistinctConcurrentCommandsAreOrdered() = runBlocking {
         val member = prepare()
         database.openHelper.writableDatabase.execSQL("UPDATE set_prescriptions SET repMin = 0")
