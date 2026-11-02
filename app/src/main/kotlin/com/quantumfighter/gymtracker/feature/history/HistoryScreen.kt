@@ -23,9 +23,9 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Composable
-internal fun HistoryRoute(model: HistoryViewModel, onHome: () -> Unit) {
+internal fun HistoryRoute(model: HistoryViewModel, onHome: () -> Unit, onBack: () -> Unit = onHome) {
     val state by model.uiState.collectAsStateWithLifecycle()
-    BackHandler { if (state.selected != null) model.select(null) else onHome() }
+    BackHandler { if (state.selected != null) model.select(null) else onBack() }
     Scaffold { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Workout history", style = MaterialTheme.typography.headlineMedium)

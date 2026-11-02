@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
  * @property selectionError A selection failed; the previously committed choice remains authoritative.
  */
 internal data class HomeUiState(
-    @param:StringRes val title: Int = R.string.app_name,
+    @param:StringRes val title: Int = R.string.home_brand,
     val catalogueLoading: Boolean = true,
     val catalogueFailed: Boolean = false,
     val library: ProgramLibrary = ProgramLibrary(),

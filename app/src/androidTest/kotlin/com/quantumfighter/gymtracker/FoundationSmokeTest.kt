@@ -18,10 +18,10 @@ class FoundationSmokeTest {
 
     @Test
     fun launcherRendersComposeAndSurvivesActivityRecreation() {
-        compose.onNodeWithText("Gym Tracker").assertIsDisplayed()
-        compose.onNodeWithText("Your workout space, on your device.").assertIsDisplayed()
+        compose.onNodeWithText("Gym tracker").assertIsDisplayed()
+        compose.onNodeWithText("Programs").assertIsDisplayed()
         compose.activityRule.scenario.recreate()
-        compose.onNodeWithText("Gym Tracker").assertIsDisplayed()
+        compose.onNodeWithText("Gym tracker").assertIsDisplayed()
     }
 
     @Test

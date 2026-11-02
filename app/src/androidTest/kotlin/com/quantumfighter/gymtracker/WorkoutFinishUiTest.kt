@@ -4,8 +4,11 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
+import androidx.compose.ui.test.isDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -126,6 +129,7 @@ class WorkoutFinishUiTest {
             val id = requireNotNull(prefs.getString("id", null))
             assertEquals(prefs.getString("snapshot", null), repository.finished(id).toString())
             assertNull(repository.active())
+            click("Progress")
             click("Workout history")
             compose.waitUntil(10_000) { compose.onAllNodes(hasText("M1 routine ·", substring = true)).fetchSemanticsNodes().isNotEmpty() }
             compose.onNode(hasText("M1 routine ·", substring = true)).performScrollTo().performClick()
@@ -352,12 +356,13 @@ class WorkoutFinishUiTest {
     }
 
     private fun waitFor(text: String) {
-        compose.waitUntil(10_000) { compose.onAllNodes(hasText(text)).fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(10_000) { compose.onAllNodes(hasText(text) or hasContentDescription(text)).fetchSemanticsNodes().isNotEmpty() }
     }
     private fun click(text: String) {
-        val node = compose.onNodeWithText(text)
-        if (text != "Warm Down") node.performScrollTo()
-        node.performClick()
+        val node = compose.onNode(hasText(text) or hasContentDescription(text))
+        if (compose.onAllNodes((hasText(text) or hasContentDescription(text)) and hasAnyAncestor(hasScrollAction())).fetchSemanticsNodes().isNotEmpty()) node.performScrollTo()
+        compose.waitUntil(10_000) { node.isDisplayed() }
+        node.assertIsDisplayed().performClick()
     }
     private fun input(label: String, value: String) {
         compose.onNodeWithText(label).performScrollTo().performTextReplacement(value)
