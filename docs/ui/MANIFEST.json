@@ -1,0 +1,147 @@
+[
+  {
+    "path": "START_HERE.md",
+    "bytes": 725,
+    "sha256": "36c252337ba113d4d4dcfce28c720f6dbfd349acb3cc6db2d000b6d0670da685"
+  },
+  {
+    "path": "docs/ui/.gitignore",
+    "bytes": 50,
+    "sha256": "16ce4c86908f4aef4e1096310c674bbba0c2307b283929eb0b0c971abd18481a"
+  },
+  {
+    "path": "docs/ui/ACCEPTANCE_CHECKLIST.md",
+    "bytes": 2358,
+    "sha256": "d826f8dfe9c605a7d0ecbcba89bceffadc25adf0067b9569be62a6bc871bd3e3"
+  },
+  {
+    "path": "docs/ui/CODEX_HANDOFF.md",
+    "bytes": 2095,
+    "sha256": "4330393a3e845592cfa0e55821ce6d84f934aef9a9ecb2310eaf6365e0a824e1"
+  },
+  {
+    "path": "docs/ui/DECISION_CHANGES.md",
+    "bytes": 4242,
+    "sha256": "eafaca6515d3df5cff1219ffe9c17bc95cda9ecdfc1723d545d014327825879e"
+  },
+  {
+    "path": "docs/ui/IMPLEMENTATION_PLAN.md",
+    "bytes": 2536,
+    "sha256": "0d706827157d330393d28a4265888eac077ab360283d8b596dcb6b36a4f04957"
+  },
+  {
+    "path": "docs/ui/PR_DESCRIPTION.md",
+    "bytes": 996,
+    "sha256": "c143581489c8889bec2f6be529170e5b0f0b2a4da761d11d90a3f35625cb86be"
+  },
+  {
+    "path": "docs/ui/README.md",
+    "bytes": 4016,
+    "sha256": "380422787e4329dd62312815fccbd5a02af27bc3c56ab71ac8114f478a0afc8e"
+  },
+  {
+    "path": "docs/ui/UI_SPECIFICATION.md",
+    "bytes": 9250,
+    "sha256": "f0b6703e165c5b3b461479cb1dd6f21c8cb2921254a7f0c9eafc2ec4d2702d38"
+  },
+  {
+    "path": "docs/ui/VERIFICATION.md",
+    "bytes": 4358,
+    "sha256": "a48f94ae52e62703ba9da821cc8cc45f7be34f68a22f2afcbaecaab1d90b3c63"
+  },
+  {
+    "path": "docs/ui/issues/00-ui-gap-audit.md",
+    "bytes": 1302,
+    "sha256": "464b94fc86d92a2bf87927de6c009ba4fd9017e46469dbcb71f6aabf535e4d12"
+  },
+  {
+    "path": "docs/ui/issues/01-home-and-navigation.md",
+    "bytes": 1112,
+    "sha256": "9fc997848eedc1879aff43e1e5742483f1ca71cfa62352d1f4ec441cd7313a40"
+  },
+  {
+    "path": "docs/ui/issues/02-recording-and-details.md",
+    "bytes": 1295,
+    "sha256": "4a3f75fe6461099c68bb01dbc03cda491123c4afb6b38fdabae10701f8f6be0d"
+  },
+  {
+    "path": "docs/ui/issues/03-countdown-and-inline-rest.md",
+    "bytes": 1229,
+    "sha256": "561a3a60eaf39d50b4e88be3d9bcd3c8199a1d18f742791e79966f09139529a1"
+  },
+  {
+    "path": "docs/ui/issues/04-session-selection-and-supersets.md",
+    "bytes": 1206,
+    "sha256": "ae8ac257b5ff93126c23aded8c5d1037d53c3f1a00c3016ff808a83baf6bc3aa"
+  },
+  {
+    "path": "docs/ui/issues/05-programs-library-and-history.md",
+    "bytes": 1031,
+    "sha256": "9ac2e8422d2cc1a50bc09257f9191c1e9b2da2ba9a8fcc4ff3d162dcbe5f151e"
+  },
+  {
+    "path": "docs/ui/prototype/THIRD_PARTY_NOTICES.md",
+    "bytes": 922,
+    "sha256": "22d39ea1991022bc287330a2bd23ff060be894317dc912a788fb7aafe02b548e"
+  },
+  {
+    "path": "docs/ui/prototype/assets/BARLOW-OFL.txt",
+    "bytes": 4377,
+    "sha256": "186d750eb496a4c17a76385f82be6aea2ac1cf2de074a811d63786cf374ea73f"
+  },
+  {
+    "path": "docs/ui/prototype/assets/LUCIDE-LICENSE.txt",
+    "bytes": 3208,
+    "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
+  },
+  {
+    "path": "docs/ui/prototype/assets/barlow-medium.ttf",
+    "bytes": 81924,
+    "sha256": "91c841fdfa8e7b94ffedbb983a363947ba6ed720f3bbf0c71d48b618053655bc"
+  },
+  {
+    "path": "docs/ui/prototype/assets/barlow-regular.ttf",
+    "bytes": 82624,
+    "sha256": "a35caa4687f434d66453c1fe423d7074cfa9fd7ab80c19b0780f3862887d2fc9"
+  },
+  {
+    "path": "docs/ui/prototype/assets/lucide.min.js",
+    "bytes": 397450,
+    "sha256": "ab85225ecc1daa2033607856f03dd2dabcbc08e2d260a5b97e17c690aa929766"
+  },
+  {
+    "path": "docs/ui/prototype/capture.cjs",
+    "bytes": 3240,
+    "sha256": "71aeea8040843b9337c209b0b5fc92239d9659942fd3836233db520fb93095e6"
+  },
+  {
+    "path": "docs/ui/prototype/index.html",
+    "bytes": 1146802,
+    "sha256": "a649a03ca112c16c3c5977202629854a3ac0744e692cd6e4173966bf4078d4a7"
+  },
+  {
+    "path": "docs/ui/prototype/package.json",
+    "bytes": 126,
+    "sha256": "92c4ea1af194d3780730df2a2dd402e3d32e572bb0050e71b23e733e3fb9d4b3"
+  },
+  {
+    "path": "docs/ui/prototype/rebuild.py",
+    "bytes": 641,
+    "sha256": "794761a6f0601f73cf5c0018059eaa799a1bdd54860e30d4ad27abc25db1f23e"
+  },
+  {
+    "path": "docs/ui/prototype/source.html",
+    "bytes": 857536,
+    "sha256": "63192a55162b311c2d631e346fe37da5fe3e279a7551f8eee6ea4fa90d1a27ed"
+  },
+  {
+    "path": "docs/ui/screenshots/README.md",
+    "bytes": 1147,
+    "sha256": "93ee0f1a8df92d742d0ead987270ba14a864f4159676e6b976c3a1cea93407c1"
+  },
+  {
+    "path": "docs/ui/verification-dom.json",
+    "bytes": 201,
+    "sha256": "70c449e65045ff58516e92553afd40c80f6d2b07c6a6878013cd1b0db50aaaf6"
+  }
+]
