@@ -14,6 +14,8 @@ import com.quantumfighter.gymtracker.data.program.ProgramRoutineEntity
 import com.quantumfighter.gymtracker.data.program.RoutineEntity
 import com.quantumfighter.gymtracker.data.program.RoutineExerciseEntity
 import com.quantumfighter.gymtracker.data.program.SetPrescriptionEntity
+import com.quantumfighter.gymtracker.data.settings.UiPreferencesDao
+import com.quantumfighter.gymtracker.data.settings.UiPreferencesEntity
 import com.quantumfighter.gymtracker.data.workout.ActiveWorkoutEntity
 import com.quantumfighter.gymtracker.data.workout.RecordedSetEntity
 import com.quantumfighter.gymtracker.data.workout.SessionExerciseEntity
@@ -23,8 +25,8 @@ import com.quantumfighter.gymtracker.data.workout.WorkoutSessionEntity
 
 /** Explicit additive migrations preserve catalogue rows; unsupported versions never reset storage. */
 @Database(
-    entities = [ExerciseEntity::class, ProgramEntity::class, RoutineEntity::class, ProgramRoutineEntity::class, RoutineExerciseEntity::class, SetPrescriptionEntity::class, AppSettingsEntity::class, WorkoutSessionEntity::class, ActiveWorkoutEntity::class, SessionExerciseEntity::class, SessionPrescriptionEntity::class, RecordedSetEntity::class],
-    version = 4,
+    entities = [ExerciseEntity::class, ProgramEntity::class, RoutineEntity::class, ProgramRoutineEntity::class, RoutineExerciseEntity::class, SetPrescriptionEntity::class, AppSettingsEntity::class, WorkoutSessionEntity::class, ActiveWorkoutEntity::class, SessionExerciseEntity::class, SessionPrescriptionEntity::class, RecordedSetEntity::class, UiPreferencesEntity::class],
+    version = 5,
     exportSchema = true,
 )
 @TypeConverters(ExerciseConverters::class)
@@ -32,9 +34,17 @@ internal abstract class GymDatabase : RoomDatabase() {
     abstract fun exerciseDao(): ExerciseDao
     abstract fun programDao(): ProgramDao
     abstract fun workoutDao(): WorkoutDao
+    abstract fun uiPreferencesDao(): UiPreferencesDao
 
     companion object {
         const val NAME = "gym-tracker.db"
+
+        /** Adds presentation preferences without rewriting plans, sessions or recorded sets. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS ui_preferences (id INTEGER NOT NULL PRIMARY KEY, hideCompleted INTEGER NOT NULL)")
+            }
+        }
 
         /** Adds lifecycle fields without rebuilding or deleting session-owned records. */
         val MIGRATION_3_4 = object : Migration(3, 4) {
@@ -85,7 +95,7 @@ internal abstract class GymDatabase : RoomDatabase() {
 
         fun build(context: Context, name: String = NAME): GymDatabase = Room.databaseBuilder(context.applicationContext, GymDatabase::class.java, name)
             .openHelperFactory(PreservingOpenHelperFactory())
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
     }
 }

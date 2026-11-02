@@ -1,5 +1,36 @@
 # Android foundation (B-01)
 
+## Approved UI foundation (2 November 2026)
+
+The current owner instruction authorises implementing the approved UI package in
+bounded increments. [Native gap audit](ui/NATIVE_GAP_AUDIT.md) maps all 20 references
+and records this first increment's acceptance scope. It supersedes earlier setup-only
+authorisation prose for this UI work; it does not declare all of B-09 or M2 complete.
+
+Home now uses the packaged Barlow fonts and approved light/dark palette, circular
+Play/Resume and Home/Programs/Progress navigation. Progress links to real workout
+history and truthfully identifies unavailable trends. Settings exposes completed
+visibility and a searchable, read-only catalogue. Saved-routine editing remains
+unavailable. Estimates and alert switches wait for real behaviour.
+
+Room schema v5 adds only `ui_preferences`, through `MIGRATION_4_5`. Its visibility
+setting defaults to showing explicitly labelled completed exercises with a line
+through their names. Hiding them retains an accessible reveal action on selection.
+The preference uses a separate repository/ViewModel and cannot overwrite the
+next-routine cursor. Writes acknowledge only after Room returns; errors retain the
+previous committed setting and an explicit Retry action. All earlier migrations,
+set transactions, corrections and finalisation rules remain registered/unchanged.
+Future complete backups must include these non-identifying preferences.
+
+Barlow regular/medium are copied from the approved package. Their SIL OFL notice is
+packaged in `app/src/main/assets/licenses/BARLOW-OFL.txt`. Native vectors use the
+reference's Lucide icon paths; their retained notices ship beside the font licence.
+There is no downloaded
+runtime font, WebView, JavaScript port or new runtime dependency.
+
+Executed checks and visual-review limitations are recorded in
+[native verification](ui/NATIVE_VERIFICATION.md). Owner visual review remains required.
+
 ## Completion and history (B-05)
 
 The owner authorised Issue #11 only on 31 October 2026, following merged B-04.

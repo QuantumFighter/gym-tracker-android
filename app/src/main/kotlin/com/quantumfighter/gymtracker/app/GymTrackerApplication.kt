@@ -4,6 +4,7 @@ import android.app.Application
 import com.quantumfighter.gymtracker.data.exercise.ExerciseRepository
 import com.quantumfighter.gymtracker.data.exercise.GymDatabase
 import com.quantumfighter.gymtracker.data.program.ProgramRepository
+import com.quantumfighter.gymtracker.data.settings.UiPreferencesRepository
 import com.quantumfighter.gymtracker.data.workout.WorkoutRepository
 
 /** Owns one lazy database/repository per process; opening and seeding run through suspend APIs. */
@@ -16,4 +17,5 @@ class GymTrackerApplication : Application() {
     /** Plans and catalogue share the same transaction-capable database. */
     internal val programs: ProgramRepository by lazy { ProgramRepository(database) }
     internal val workouts: WorkoutRepository by lazy { WorkoutRepository(database) }
+    internal val preferences: UiPreferencesRepository by lazy { UiPreferencesRepository(database) }
 }

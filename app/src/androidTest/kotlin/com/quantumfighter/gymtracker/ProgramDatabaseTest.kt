@@ -207,6 +207,7 @@ class ProgramDatabaseTest {
                 },
                 GymDatabase.MIGRATION_2_3,
                 GymDatabase.MIGRATION_3_4,
+                GymDatabase.MIGRATION_4_5,
             ).build()
         expectFailure<IllegalStateException> { database.exerciseDao().all() }
         database.close()
