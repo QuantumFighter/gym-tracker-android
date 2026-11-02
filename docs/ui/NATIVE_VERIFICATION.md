@@ -33,6 +33,16 @@ Legacy UI tests now find icon buttons by accessibility descriptions, enter Histo
 
 All three existing host-controlled abrupt process-death checks passed in airplane mode: recording after acknowledged save, finished history after committed Finish, and warm-down before Finish. Each killed the live process with Room open, proved orderly cleanup did not run, then verified preserved data and real navigation in a fresh process. The original airplane mode was restored. These are boundary checks, not qualification of every mid-transaction instruction or physical power/storage failure.
 
+## Galaxy A32 physical verification
+
+On 2 November 2026 the owner connected the SM-A325F running Android 13 / API 33 and authorised GitHub publication. Debug and test APKs were updated in place without clearing or uninstalling either app. All test databases were isolated synthetic fixtures; existing app data was not cleared.
+
+- Full physical suite: **56/56 tests passed** in airplane mode, 116.079 seconds.
+- All three host-controlled abrupt process-death checks passed on the phone: acknowledged recording, committed Finish and pending warm-down. Each fresh-process verification passed, retaining exact saved work and proving orderly cleanup did not run before the kill.
+- With the actual phone system font scale set to 2.0, all **4/4 UiFoundationTest cases passed**, 20.281 seconds. This covers the new Home/navigation/Settings/library and visibility/retry paths; it is not full-app accessibility qualification.
+- Restored and verified original phone settings: font scale 1.1, airplane mode off, stay-awake value 0, dark mode unchanged. No personal screenshot or workout data is included in this evidence.
+- Inspected physical [Home](native-screenshots/a32/home-native.png), [Settings](native-screenshots/a32/settings-native.png), [Home at system 200%](native-screenshots/a32-system-200/home-native.png) and [Settings at system 200%](native-screenshots/a32-system-200/settings-native.png). The fixture's explicit theme/font comparisons are also retained separately.
+
 ## Visual evidence
 
 [Native capture notes](native-screenshots/README.md) and [Home](native-screenshots/ui-evidence/home-native.png), [dark Home](native-screenshots/ui-evidence/home-dark.png), [enlarged text](native-screenshots/ui-evidence/home-200-percent.png), [Settings](native-screenshots/ui-evidence/settings-native.png).
@@ -43,10 +53,10 @@ Inspected Home light/dark/enlarged text and Settings captures. All data is synth
 
 - API 37 Compose UI tests cannot initialise: the existing Espresso version calls removed android.hardware.input.InputManager.getInstance. Four new UI tests failed at framework initialisation before app assertions. No dependency changes or test quarantines were made. The same suite passes on API 33.
 - Browser security refused the local prototype file URL. Its source/styles and behaviour specification were inspected. No rendered browser reference comparison or all-20-screen screenshot pass is claimed.
-- No Galaxy A32 is connected. Owner visual review, TalkBack, device-wide 200% scaling, narrow-screen/landscape and full target-device qualification remain outstanding. New/empty/resume/failure states were not fully designed in the package.
+- A32 testing of this increment, including actual system 200% font scaling, passed as recorded above. Owner visual review, TalkBack, landscape and full-app target-device qualification remain outstanding. New/empty/resume/failure states were not fully designed in the package.
 - Timers/countdowns, recording layout/correction/extra-set changes, notes, groups/removal, lifecycle editors, comparisons/progression and M3 features remain separate increments. DECISION_CHANGES.md records unresolved semantics. Do not interpret this foundation as implementing them.
-- Git push of docs/approved-ui-handover was rejected by automatic approval review because specific external publication was not authorised. No remote branch, PR, issue or review message was created. Documentation and native PR descriptions are prepared locally in C:\QUT\Projects\gym-tracker-build-tools.
-- GitHub's four named CI checks have not run for these local commits. This report describes local checks and direct emulator instrumentation, not CI or A32 approval.
+- The initial publication block was resolved by the owner's subsequent GitHub authorisation. Documentation draft [PR #35](https://github.com/QuantumFighter/gym-tracker-android/pull/35) is open. The native increment remains separately reviewable and is published after adding this phone evidence. No merge or issue closure is authorised.
+- GitHub's four named CI checks are tracked on the draft PRs. Local and physical results above do not substitute for their final status; owner visual approval remains pending.
 
 ## Owner review
 
