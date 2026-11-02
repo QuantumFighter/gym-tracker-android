@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -152,7 +153,9 @@ class ProgramUiTest {
     private fun click(text: String) {
         // Prevent IME/focused-field scrolling from obscuring validation on the smaller CI phone.
         compose.runOnIdle { dismissInput() }
-        compose.onNodeWithText(text).performScrollTo().performClick()
+        val node = compose.onNodeWithText(text)
+        if (compose.onAllNodes(hasText(text) and hasAnyAncestor(hasScrollAction())).fetchSemanticsNodes().isNotEmpty()) node.performScrollTo()
+        node.assertIsDisplayed().performClick()
     }
     private fun input(label: String, value: String) {
         compose.onNodeWithText(label).performScrollTo().performTextReplacement(value)

@@ -28,14 +28,26 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quantumfighter.gymtracker.domain.LoadConvention
 import com.quantumfighter.gymtracker.domain.LoadInput
 import com.quantumfighter.gymtracker.domain.PreparedRoutine
+import com.quantumfighter.gymtracker.ui.components.MainDestination
+import com.quantumfighter.gymtracker.ui.components.MainNavigation
 
 /** Minimal list → creation → saved-detail flow. All writes go through the ViewModel. */
 @Composable
-internal fun ProgramsRoute(viewModel: ProgramsViewModel, onHome: () -> Unit, onResumeWorkout: (() -> Unit)? = null) {
+internal fun ProgramsRoute(viewModel: ProgramsViewModel, onHome: () -> Unit, onResumeWorkout: (() -> Unit)? = null, onProgress: () -> Unit = {}) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val back = { if (!viewModel.back()) onHome() }
     BackHandler(onBack = back)
-    Scaffold { padding ->
+    Scaffold(bottomBar = {
+        if (!state.creatingProgram && !state.choosingExercise && state.routineProgramId == null && state.detailMembershipId == null) {
+            MainNavigation(MainDestination.PROGRAMS) {
+                when (it) {
+                    MainDestination.HOME -> onHome()
+                    MainDestination.PROGRAMS -> Unit
+                    MainDestination.PROGRESS -> onProgress()
+                }
+            }
+        }
+    }) { padding ->
         Column(
             modifier = Modifier.padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
