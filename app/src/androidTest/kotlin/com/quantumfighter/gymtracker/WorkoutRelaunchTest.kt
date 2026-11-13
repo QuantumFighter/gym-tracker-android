@@ -1,8 +1,10 @@
 package com.quantumfighter.gymtracker
 
 import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -84,8 +86,8 @@ class WorkoutRelaunchTest {
             assertEquals(saved, repository.save(SaveSetCommand(saved.commandId, saved.exerciseId, saved.loadGrams, saved.repetitions, saved.setType, saved.unit)))
             assertEquals(expected, repository.active().toString())
             compose.setContent { GymTrackerApp(ExerciseRepository(database), ProgramRepository(database), repository) }
-            compose.waitUntil(10_000) { compose.onAllNodes(hasText("Resume workout")).fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithText("Resume workout").performScrollTo().performClick()
+            compose.waitUntil(10_000) { compose.onAllNodes(hasContentDescription("Resume workout")).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithContentDescription("Resume workout").performScrollTo().performClick()
             val name = active.exercises.single { it.exercise.id == saved.exerciseId }.exercise.definition.name
             val count = active.exercises.single { it.exercise.id == saved.exerciseId }.sets.size
             compose.onNodeWithText("$name · Partial · $count saved").performScrollTo().performClick()

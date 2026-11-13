@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
@@ -39,9 +40,10 @@ import kotlinx.coroutines.delay
 
 /** Focused recorder. The saved table always comes from Room, independently of editable drafts. */
 @Composable
-internal fun WorkoutRoute(model: WorkoutViewModel, onHome: () -> Unit, onHistory: () -> Unit = {}) {
+internal fun WorkoutRoute(model: WorkoutViewModel, onHome: () -> Unit, onHistory: () -> Unit = {}, hideCompleted: Boolean = false) {
     val state by model.uiState.collectAsStateWithLifecycle()
     val workout = state.workout
+    var revealCompleted by rememberSaveable(workout?.session?.id, hideCompleted) { mutableStateOf(false) }
     val exercise = workout?.exercises?.find { it.exercise.id == state.selected }
     var details by remember { mutableStateOf(false) }
     var abandon by remember { mutableStateOf(false) }
@@ -99,7 +101,11 @@ internal fun WorkoutRoute(model: WorkoutViewModel, onHome: () -> Unit, onHistory
             } else if (workout != null && exercise == null) {
                 Text("Exercises", style = MaterialTheme.typography.headlineMedium)
                 Text("Choose any exercise. Saved sets remain when you switch.")
-                workout.exercises.sortedBy { it.exercise.ordinal }.forEach { item ->
+                val completedCount = workout.exercises.count { it.exercise.status == "COMPLETE" }
+                if (hideCompleted && completedCount > 0) {
+                    TextButton(onClick = { revealCompleted = !revealCompleted }) { Text(if (revealCompleted) "Hide completed exercises" else "Show completed exercises ($completedCount)") }
+                }
+                workout.exercises.sortedBy { it.exercise.ordinal }.filter { !hideCompleted || revealCompleted || it.exercise.status != "COMPLETE" }.forEach { item ->
                     Button(onClick = { model.select(item.exercise.id) }, enabled = !state.saving) {
                         Text(
                             "${item.exercise.definition.name} · ${if (item.exercise.status == "COMPLETE") {
