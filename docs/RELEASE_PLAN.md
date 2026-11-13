@@ -1,6 +1,6 @@
 # Release plan
 
-The staged M1/M2/M3 scope was approved by the owner on 30 October 2026 (Q1). Sprint sequence remains proposed, not a fixed delivery-date commitment. Each sprint lasts two weeks. The Project uses provisional dates starting 2 November 2026; adjust them when development is authorised, rather than treating them as commitments. Capacity is unknown. Split/reforecast stories during refinement and extend the sequence if needed rather than weaken acceptance criteria. Implementation remains unauthorised.
+The staged M1/M2/M3 scope was approved by the owner on 30 October 2026 (Q1). Sprint sequence remains proposed, not a fixed delivery-date commitment. Each sprint lasts two weeks. The Project uses provisional dates starting 2 November 2026; adjust them when development is authorised, rather than treating them as commitments. Capacity is unknown. Split/reforecast stories during refinement and extend the sequence if needed rather than weaken acceptance criteria. This is the original sequencing baseline, not current implementation status. Later owner-authorised increments and merged PRs supersede setup-era status; the Project owns live priority and iteration. Refine the approved UI through the existing stories using [UI implementation plan](ui/IMPLEMENTATION_PLAN.md), without silently moving M3 scope into M2.
 
 ## Milestones
 
@@ -21,7 +21,7 @@ M1 is internal-use validation; M2 is the first recommended personal-use release.
 | --- | --- | --- |
 | 1 | B-01–B-05: complete one manual workout | On a clean device in airplane mode, create a routine, record two exercises out of order, warm down, finish, relaunch and read saved sets; retry-save test passes. M1 gate. Keep catalogue tiny and omit polish. |
 | 2 | B-06–B-07: recover recording, deliver screen-off rest alerts and inspect storage safety | Kill process mid-session/rest and resume correct committed state; timer uncertainty is explicit after reboot; demonstrate screen-off alerts, permission-disabled fallback and alert rescheduling/cancellation; baseline migration fixtures and non-destructive error paths pass. |
-| 3 | B-08–B-10: usable superset workout | Record a superset in different orders with one round rest; full-screen/compact timer agree; completed visibility persists; Home and remaining estimates reflect pending work. |
+| 3 | B-08–B-10: usable superset workout | Record a superset in different orders with one round rest; approved inline rest controls remain consistent with durable timer state; completed visibility persists; Home and remaining estimates reflect pending work. |
 | 4 | B-11–B-13: reusable plans and explainable progression | Duplicate/archive/edit without changing history; add a custom substitute; one completed session with at least three prescribed working sets all reaching full reps produces an overridable increase; two-set prescriptions allow manual increases only, incomplete work does not count as failure. |
 | 5 | B-14–B-15: portable complete data | Export/restore on a fresh installation; malformed import leaves data intact; CSV faithfully represents units and group context. |
 | 6 | B-16–B-17: qualify manual MVP | All M2 scenarios pass; target-device accessibility/performance evidence and OS backup policy documented; release rehearsal completes. M2 gate. |

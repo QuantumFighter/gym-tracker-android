@@ -1,5 +1,9 @@
 # Gym Tracker Android
 
+## Current planning reference
+
+The approved [UI handover](docs/ui/README.md) is integrated into the existing Agile structure. Use live [issues](https://github.com/QuantumFighter/gym-tracker-android/issues), [pull requests](https://github.com/QuantumFighter/gym-tracker-android/pulls) and the [Project](https://github.com/users/QuantumFighter/projects/2) for delivery status, and the [UI implementation plan](docs/ui/IMPLEMENTATION_PLAN.md) for bounded refinement. Older increment and setup notes below are historical; they do not reset completed work or authorise duplicate implementation. Preserve one implementation story at a time, separate PR review, native visual approval and explicit merge authorisation.
+
 Current increment: B-05 / [Issue #11](https://github.com/QuantumFighter/gym-tracker-android/issues/11),
 authorised on 31 October 2026 after B-04 merged. Complete exercises, enter optional
 warm-down, correct saved sets before Finish, and retrieve read-only session history.
