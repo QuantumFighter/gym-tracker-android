@@ -3,6 +3,8 @@ package com.quantumfighter.gymtracker.feature.workout
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.quantumfighter.gymtracker.data.workout.RecordedSetEntity
+import com.quantumfighter.gymtracker.data.workout.SessionExerciseGraph
+import com.quantumfighter.gymtracker.data.workout.SessionPrescriptionEntity
 import com.quantumfighter.gymtracker.data.workout.WorkoutGraph
 import com.quantumfighter.gymtracker.data.workout.WorkoutRepository
 import com.quantumfighter.gymtracker.domain.LoadInput
@@ -15,7 +17,14 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 internal data class SetDraft(val weight: String = "", val reps: String = "", val type: String = "WORKING", val commandId: String = UUID.randomUUID().toString())
-internal data class WorkoutUiState(val workout: WorkoutGraph? = null, val loading: Boolean = true, val loadFailed: Boolean = false, val saving: Boolean = false, val selected: String? = null, val drafts: Map<String, SetDraft> = emptyMap(), val error: String? = null, val acknowledgement: String? = null, val retryLabel: String? = null, val confirmWarmdown: Boolean = false, val editing: RecordedSetEntity? = null, val correction: SetDraft? = null, val finishedId: String? = null)
+internal data class WorkoutUiState(val workout: WorkoutGraph? = null, val loading: Boolean = true, val loadFailed: Boolean = false, val saving: Boolean = false, val selected: String? = null, val drafts: Map<String, SetDraft> = emptyMap(), val error: String? = null, val acknowledgement: String? = null, val retryLabel: String? = null, val confirmWarmdown: Boolean = false, val editing: RecordedSetEntity? = null, val correction: SetDraft? = null, val finishedId: String? = null, val addingExtraSet: Boolean = false)
+
+internal fun SessionExerciseGraph.nextPrescription(): SessionPrescriptionEntity? {
+    val savedByType = sets.groupingBy { it.setType }.eachCount()
+    return prescriptions.sortedBy { it.ordinal }.groupBy { it.setType }
+        .mapNotNull { (type, targets) -> targets.getOrNull(savedByType[type] ?: 0) }
+        .minByOrNull { it.ordinal }
+}
 
 /** Drafts survive navigation in this ViewModel; only Room records are authoritative after process death. */
 internal class WorkoutViewModel(private val repository: WorkoutRepository) : ViewModel() {
@@ -48,7 +57,7 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
 
     fun start(membershipId: String) = command("Could not start workout.", "Retry Start Workout") {
         repository.start(membershipId)
-        state.value = state.value.copy(finishedId = null, selected = null, drafts = emptyMap())
+        state.value = state.value.copy(finishedId = null, selected = null, drafts = emptyMap(), addingExtraSet = false)
     }
     fun complete() {
         val current = state.value
@@ -56,7 +65,7 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
         val exercise = current.selected ?: return
         command("Could not complete exercise.", "Retry Complete Exercise") {
             repository.complete(session, exercise)
-            state.value = state.value.copy(selected = null)
+            state.value = state.value.copy(selected = null, addingExtraSet = false)
         }
     }
     fun requestWarmdown() {
@@ -77,7 +86,7 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
         val id = state.value.workout?.session?.id ?: return
         command("Could not enter warm-down.", "Retry Warm Down") {
             repository.warmdown(id, confirmed)
-            state.value = state.value.copy(confirmWarmdown = false, selected = null, editing = null)
+            state.value = state.value.copy(confirmWarmdown = false, selected = null, editing = null, correction = null, addingExtraSet = false)
         }
     }
     fun returnToRecording() {
@@ -133,9 +142,18 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
         retryAction = null
         val current = state.value
         val exercise = current.workout?.exercises?.find { it.exercise.id == id }
-        val target = exercise?.prescriptions?.minByOrNull { it.ordinal }
-        val drafts = if (id != null && id !in current.drafts) current.drafts + (id to SetDraft(target?.loadGrams?.let(LoadInput::formatKg).orEmpty(), target?.repMin?.toString().orEmpty())) else current.drafts
-        state.value = current.copy(selected = id, drafts = drafts, error = null, acknowledgement = null, retryLabel = null)
+        val drafts = if (exercise != null && id !in current.drafts) current.drafts + (exercise.exercise.id to exercise.newSetDraft()) else current.drafts
+        state.value = current.copy(selected = id, drafts = drafts, editing = null, correction = null, addingExtraSet = false, error = null, acknowledgement = null, retryLabel = null)
+    }
+
+    fun setExtraEditor(open: Boolean) {
+        val current = state.value
+        val exercise = current.workout?.exercises?.find { it.exercise.id == current.selected } ?: return
+        if (current.saving) return
+        if (open && (current.loadFailed || current.workout.session.state != "RECORDING" || exercise.nextPrescription() != null)) return
+        retryAction = null
+        val drafts = if (open) current.drafts else current.drafts + (exercise.exercise.id to exercise.newSetDraft())
+        state.value = current.copy(drafts = drafts, addingExtraSet = open, error = null, acknowledgement = null, retryLabel = null)
     }
 
     fun edit(draft: SetDraft) {
@@ -149,11 +167,29 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
     fun save() {
         val current = state.value
         val id = current.selected ?: return
+        val exercise = current.workout?.exercises?.find { it.exercise.id == id } ?: return
+        if (current.loadFailed || current.editing != null || (exercise.nextPrescription() == null && !current.addingExtraSet)) return
         val draft = current.drafts[id] ?: return
         command("Could not save set. Your draft is still here.", "Retry Save Set") {
             val payload = SaveSetCommand(draft.commandId, id, LoadInput.parseKg(draft.weight), draft.reps.toIntOrNull() ?: throw IllegalArgumentException("Enter positive whole repetitions."), draft.type)
-            repository.save(payload)
-            state.value = state.value.copy(drafts = state.value.drafts + (id to draft.copy(commandId = UUID.randomUUID().toString())), acknowledgement = "Set saved")
+            val saved = repository.save(payload)
+            val updated = exercise.copy(sets = (exercise.sets + saved).distinctBy { it.id })
+            val latest = state.value
+            val workout = latest.workout
+            state.value = latest.copy(
+                workout = workout?.copy(
+                    exercises = workout.exercises.map { item ->
+                        if (item.exercise.id == id && item.sets.none { it.id == saved.id }) {
+                            item.copy(exercise = item.exercise.copy(status = "PARTIAL"), sets = item.sets + saved)
+                        } else {
+                            item
+                        }
+                    },
+                ),
+                drafts = latest.drafts + (id to updated.newSetDraft()),
+                addingExtraSet = false,
+                acknowledgement = "Set saved",
+            )
         }
     }
 
@@ -175,5 +211,15 @@ internal class WorkoutViewModel(private val repository: WorkoutRepository) : Vie
                 state.value = state.value.copy(saving = false)
             }
         }
+    }
+}
+
+private fun SessionExerciseGraph.newSetDraft(): SetDraft {
+    val target = nextPrescription()
+    val last = sets.maxByOrNull { it.sequence }
+    return if (target != null) {
+        SetDraft(target.loadGrams?.let(LoadInput::formatKg).orEmpty(), target.repMin.toString(), target.setType)
+    } else {
+        SetDraft(last?.loadGrams?.let(LoadInput::formatKg).orEmpty(), last?.repetitions?.toString().orEmpty())
     }
 }
