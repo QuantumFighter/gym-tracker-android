@@ -85,6 +85,10 @@ class UiFoundationTest {
         waitFor("Workout history")
         click("Workout history")
         waitFor("No finished workouts yet.")
+        click("Progress")
+        waitFor("Exercise trends are not available yet.")
+        click("Workout history")
+        waitFor("No finished workouts yet.")
         compose.runOnIdle { compose.activity.onBackPressedDispatcher.onBackPressed() }
         waitFor("Exercise trends are not available yet.")
         click("Home")
@@ -95,6 +99,58 @@ class UiFoundationTest {
         waitFor(BuiltInCatalogue.exercises.first().name)
         assertEquals(membership, ProgramRepository(database).readLibrary().nextMembershipId)
         assertEquals(null, WorkoutRepository(database).active())
+    }
+
+    @Test fun t03HistoryReadFailureOffersRetryWithoutAnEmptyMessage() = runBlocking {
+        prepare()
+        val sqlite = database.openHelper.writableDatabase
+        sqlite.execSQL("ALTER TABLE workout_sessions RENAME TO unavailable_workout_sessions")
+        start()
+        waitFor("Upper Body A")
+        click("Progress")
+        waitFor("Workout history")
+        click("Workout history")
+        waitFor("Retry history")
+        compose.onNodeWithText("No finished workouts yet.").assertDoesNotExist()
+        sqlite.execSQL("ALTER TABLE unavailable_workout_sessions RENAME TO workout_sessions")
+        click("Retry history")
+        waitFor("No finished workouts yet.")
+        compose.onNodeWithText("Retry history").assertDoesNotExist()
+    }
+
+    @Test fun t03ChoosingNextRoutineDuringWorkoutPreservesSavedSetsAndFinishAdvances() = runBlocking {
+        val membership = prepare()
+        val plans = ProgramRepository(database)
+        val program = plans.readLibrary().programs.single()
+        val exerciseId = BuiltInCatalogue.exercises.first().id
+        val successor = plans.createRoutine(program.id, "Upper Body B", listOf(RoutineExerciseDraft(UUID.randomUUID().toString(), exerciseId, listOf(SetTarget(8, 12, null, 90)))))
+        val manualChoice = plans.createRoutine(program.id, "Upper Body C", listOf(RoutineExerciseDraft(UUID.randomUUID().toString(), exerciseId, listOf(SetTarget(8, 12, null, 90)))))
+        val workouts = WorkoutRepository(database)
+        val id = workouts.start(membership)
+        workouts.warmup(false)
+        val exercise = workouts.active()!!.exercises.first().exercise
+        val saved = workouts.save(SaveSetCommand(UUID.randomUUID().toString(), exercise.id, null, 10, "WORKING"))
+
+        start()
+        waitFor("Resume workout")
+        click("Choose next routine")
+        click("Synthetic program · Upper Body C")
+        compose.waitUntil(10_000) { runBlocking { plans.readLibrary().nextMembershipId == manualChoice } }
+        compose.onNodeWithContentDescription("Record Workout").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Resume workout").performClick()
+        waitFor("${exercise.definition.name} · Partial · 1 saved")
+        val resumed = workouts.active()!!
+        assertEquals(id, resumed.session.id)
+        assertEquals(listOf(saved), resumed.exercises.flatMap { it.sets })
+
+        click("Warm Down")
+        waitFor("Unfinished exercises remain")
+        click("Enter Warm-down")
+        waitFor("Finish Workout")
+        click("Finish Workout")
+        waitFor("Workout finished")
+        assertEquals(successor, plans.readLibrary().nextMembershipId)
+        assertEquals(listOf(saved), workouts.finished(id)!!.exercises.flatMap { it.sets })
     }
 
     @Test fun t03HiddenCompletedWorkCanBeRevealedAndResumeCannotStartAgain() = runBlocking {

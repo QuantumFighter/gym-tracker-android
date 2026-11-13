@@ -226,6 +226,9 @@ class WorkoutFinishUiTest {
             compose.onNode(hasText("Early routine ·", substring = true)).performScrollTo().performClick()
             waitFor("Finished · Read-only")
             listOf("Complete", "Partial", "Skipped").forEachIndexed { i, status -> compose.onNodeWithText("${BuiltInCatalogue.exercises[i].name} · $status").performScrollTo().assertIsDisplayed() }
+            click("Back to History")
+            click("Back to workout")
+            waitFor("Workout finished")
         } finally {
             compose.activityRule.scenario.close()
             database.close()

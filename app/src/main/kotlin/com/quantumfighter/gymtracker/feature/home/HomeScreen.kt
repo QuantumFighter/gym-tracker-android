@@ -94,7 +94,7 @@ internal fun HomeScreen(uiState: HomeUiState, modifier: Modifier = Modifier, onR
                         Text("Routine editing is not available yet.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                if (!hasActive && uiState.library.programs.any { it.routines.isNotEmpty() }) {
+                if (uiState.library.programs.any { it.routines.isNotEmpty() }) {
                     TextButton(onClick = { choosing = true }, enabled = !uiState.selecting, modifier = Modifier.align(Alignment.CenterHorizontally)) { Text("Choose next routine") }
                 }
                 if (uiState.selectionError) Text("Could not select routine. Check that its exercises are still available, then retry.", color = MaterialTheme.colorScheme.error)

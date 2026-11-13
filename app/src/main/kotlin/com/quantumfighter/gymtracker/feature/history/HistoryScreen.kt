@@ -11,6 +11,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -23,11 +24,12 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Composable
-internal fun HistoryRoute(model: HistoryViewModel, onHome: () -> Unit, onBack: () -> Unit = onHome) {
+internal fun HistoryRoute(model: HistoryViewModel, onHome: () -> Unit, onBack: () -> Unit, backLabel: String) {
     val state by model.uiState.collectAsStateWithLifecycle()
     BackHandler { if (state.selected != null) model.select(null) else onBack() }
     Scaffold { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (state.selected == null) TextButton(onClick = onBack) { Text(backLabel) }
             Text("Workout history", style = MaterialTheme.typography.headlineMedium)
             if (state.loading) Text("Loading history…")
             if (state.failed) {
@@ -35,7 +37,7 @@ internal fun HistoryRoute(model: HistoryViewModel, onHome: () -> Unit, onBack: (
                 Button(onClick = model::retry) { Text("Retry history") }
             }
             if (state.selected == null) {
-                if (!state.loading && state.sessions.isEmpty()) Text("No finished workouts yet.")
+                if (!state.loading && !state.failed && state.sessions.isEmpty()) Text("No finished workouts yet.")
                 state.sessions.forEach { session ->
                     Button(onClick = { model.select(session.id) }) { Text("${session.routineName} · ${historicalDate(session.startedAt, session.offsetSeconds)}") }
                 }

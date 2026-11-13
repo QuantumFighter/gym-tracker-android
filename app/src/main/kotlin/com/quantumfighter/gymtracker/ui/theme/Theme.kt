@@ -26,7 +26,7 @@ private val ApprovedTypography = Typography(
 )
 
 private val Light = lightColorScheme(
-    primary = Color(0xFF3156F5), onPrimary = Color.White, primaryContainer = Color(0xFFDBE2F4), onPrimaryContainer = Color(0xFF3156F5),
+    primary = Color(0xFF3156F5), onPrimary = Color.White, primaryContainer = Color(0xFFDBE2F4), onPrimaryContainer = Color(0xFF2D50E8),
     secondary = Color(0xFF646A80), onSecondary = Color.White, secondaryContainer = Color(0xFFDCE2EC), onSecondaryContainer = Color(0xFF202438),
     tertiary = Color(0xFF23834B), onTertiary = Color.White,
     background = Color(0xFFE9EDF3), onBackground = Color(0xFF202438),

@@ -38,7 +38,7 @@ private data object Programs : NavKey
 private data object Workout : NavKey
 
 @Serializable
-private data object History : NavKey
+private data class History(val fromWorkout: Boolean = false) : NavKey
 
 @Serializable
 private data object Progress : NavKey
@@ -102,20 +102,22 @@ internal fun GymTrackerApp(exercises: ExerciseRepository, programs: ProgramRepos
                         WorkoutRoute(workoutModel, onHome = {
                             backStack.clear()
                             backStack.add(Home)
-                        }, onHistory = { backStack.add(History) }, hideCompleted = settingsState?.hideCompleted ?: false)
+                        }, onHistory = { backStack.add(History(fromWorkout = true)) }, hideCompleted = settingsState?.hideCompleted ?: false)
                     }
                 }
-                entry<History> {
+                entry<History> { destination ->
                     if (workouts != null) {
                         val model: HistoryViewModel = viewModel(factory = viewModelFactory { initializer { HistoryViewModel(workouts) } })
-                        HistoryRoute(model, onHome = {
-                            backStack.clear()
-                            backStack.add(Home)
-                        }, onBack = { backStack.removeLastOrNull() })
+                        HistoryRoute(
+                            model,
+                            onHome = home,
+                            onBack = { backStack.removeLastOrNull() },
+                            backLabel = if (destination.fromWorkout) "Back to workout" else "Progress",
+                        )
                     }
                 }
                 entry<Progress> {
-                    ProgressScreen(onHome = home, onPrograms = toPrograms, onHistory = { backStack.add(History) })
+                    ProgressScreen(onHome = home, onPrograms = toPrograms, onHistory = { backStack.add(History()) })
                 }
                 entry<Settings> {
                     SettingsRoute(settingsModel, onBack = { backStack.removeLastOrNull() }, onLibrary = { backStack.add(Library) })
