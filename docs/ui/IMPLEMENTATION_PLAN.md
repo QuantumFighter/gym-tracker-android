@@ -6,12 +6,12 @@ This is a proposed refinement sequence, not new sprint assignments. Follow the r
 |---|---|---|---|
 | Documentation baseline | Whole package | Agile process | Merge UI reference through documentation-only PR. |
 | UI gap audit | Current native app vs specification | B-04/B-05 baseline, B-09 | Map every screen/control to implemented, UI-only change, missing behaviour, or deferred work. |
-| Home/navigation/style | Home, Settings, shared type | B-09 (#15) | Minimal Home, routes, preferences, active/empty states. |
+| Home/navigation/style | Home, Settings, Progress, shared type | B-09 (#15) | Minimal Home, navigation, preferences and active/empty states. Progress opens saved, read-only Workout history. Settings opens the read-only Exercise Library with simple name search. |
 | Recording corrections | Exercise + Details | B-04 (#10), B-05 (#11), B-09 | Chronological edits, extra-set +, notes, data-safe UI. |
 | Timers | Picker, countdown, warm-down, rest | B-06 (#12), B-09 | Countdown UX and robust real timer integration. |
 | Selection/group changes | Exercise selection | B-08 (#14), B-09 | Multi-select/link/unlink with safe session mutations. |
-| Programs/library | Editors and picker | B-11, B-12 | Native forms/navigation with immutable prior snapshots. |
-| Summary/history/progress | Summary, history, graphs, progression | B-05, B-10 (#16), B-13 (#19) | Faithful historical display, defined comparisons, explainable recommendations. |
+| Programs/library | Editors and picker | B-11, B-12 | Native forms, routine editing, Library filters, multi-add and custom exercise editing. Preserve prior snapshots. |
+| Summary/history/progress | Summary, history, graphs, progression | B-05, B-10 (#16), B-13 (#19) | Expand the saved History presentation, define comparisons for trends and add explainable recommendations. |
 | Suggested programs | Suggestion setup/draft | B-18, M3 | Refined offline generator after prerequisites. |
 | Release validation | All | B-16/B-17; B-19/B-20 for later types | Target-device/accessibility/recovery and scope qualification. |
 
