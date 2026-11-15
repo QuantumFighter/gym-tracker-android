@@ -2,7 +2,7 @@ package com.quantumfighter.gymtracker
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
@@ -91,6 +91,7 @@ class WorkoutFinishUiTest {
                 waitFor("Set saved")
                 click("Back to Exercises")
                 click("${BuiltInCatalogue.exercises[0].name} · Partial · 1 saved")
+                click("Add an extra set")
                 input("Repetitions", "10")
                 click("Save Set")
                 waitFor("Set saved")
@@ -175,10 +176,10 @@ class WorkoutFinishUiTest {
             click("Save Set")
             waitFor("Set saved")
             click("Correct set 1")
-            compose.onNode(hasText("Warm Down") and hasAnyAncestor(isDialog())).performClick()
-            waitFor("Unfinished exercises remain")
-            compose.onNodeWithText("Keep Recording").performClick()
-            // Details is itself an active subview with a direct Warm Down action.
+            waitFor("Correct saved set 1")
+            compose.onNodeWithText("Warm Down").assertDoesNotExist()
+            click("Cancel correction")
+            // Details keeps its existing Warm Down action.
             click("Details")
             compose.onNode(hasText("Warm Down") and hasAnyAncestor(isDialog())).performClick()
             waitFor("Unfinished exercises remain")
@@ -189,11 +190,11 @@ class WorkoutFinishUiTest {
             click("Correct set 1")
             input("Corrected repetitions", "11")
             database.openHelper.writableDatabase.execSQL("CREATE TRIGGER b05_correct_reject BEFORE UPDATE ON recorded_sets BEGIN SELECT RAISE(ABORT, 'synthetic failure'); END")
-            compose.onNodeWithText("Save Correction").performClick()
+            click("Save Correction")
             waitFor("Could not correct set. Previous saved values are retained.")
             assertEquals(8, repository.active()!!.exercises.flatMap { it.sets }.single().repetitions)
             database.openHelper.writableDatabase.execSQL("DROP TRIGGER b05_correct_reject")
-            compose.onNodeWithText("Save Correction").performClick()
+            click("Save Correction")
             waitFor("Correction saved")
             assertEquals(11, repository.active()!!.exercises.flatMap { it.sets }.single().repetitions)
             click("Back to Exercises")
@@ -206,6 +207,7 @@ class WorkoutFinishUiTest {
             click("${BuiltInCatalogue.exercises[1].name} · No saved sets")
             click("Save Set")
             waitFor("Set saved")
+            click("Back to Exercises")
             click("Warm Down")
             waitFor("Unfinished exercises remain")
             compose.onNodeWithText("Enter Warm-down").performClick()
@@ -236,7 +238,66 @@ class WorkoutFinishUiTest {
         }
     }
 
-    @Test fun t03FailedWarmdownFromScrolledRecorderShowsDialogErrorAndRetry() = runBlocking {
+    @Test fun t03CorrectionStaysInSequenceAndExtraSetsRequireOptIn() = runBlocking {
+        val name = "recorder-sequence-ui-test.db"
+        context.deleteDatabase(name)
+        val database = GymDatabase.build(context, name)
+        val repository = WorkoutRepository(database)
+        try {
+            ExerciseRepository(database).seedCatalogue()
+            val plans = ProgramRepository(database)
+            val program = plans.createProgram("Sequence fixture")
+            val exercise = BuiltInCatalogue.exercises.first()
+            val targets = listOf(SetTarget(8, 12, 12345, 90), SetTarget(9, 12, 12345, 90), SetTarget(10, 12, 12345, 90))
+            val member = plans.createRoutine(program, "Sequence routine", listOf(RoutineExerciseDraft(UUID.randomUUID().toString(), exercise.id, targets)))
+            repository.start(member)
+            repository.warmup(false)
+            val exerciseId = repository.active()!!.exercises.single().exercise.id
+            repeat(3) { repository.save(SaveSetCommand(UUID.randomUUID().toString(), exerciseId, 12345, 8 + it, "WORKING")) }
+            repository.startRest(exerciseId)
+            val before = repository.active()!!
+
+            compose.setContent { GymTrackerApp(ExerciseRepository(database), plans, repository) }
+            waitFor("Resume workout")
+            click("Resume workout")
+            waitFor("${exercise.name} · Partial · 3 saved")
+            click("${exercise.name} · Partial · 3 saved")
+            compose.onNodeWithText("Save Set").assertDoesNotExist()
+            compose.onNodeWithText("Warm Down").assertDoesNotExist()
+            click("Correct set 2")
+            waitFor("Correct saved set 2")
+            val first = compose.onNode(hasContentDescription("Correct set 1")).getUnclippedBoundsInRoot()
+            val editor = compose.onNodeWithText("Correct saved set 2").getUnclippedBoundsInRoot()
+            val third = compose.onNode(hasContentDescription("Correct set 3")).getUnclippedBoundsInRoot()
+            assertTrue(first.bottom < editor.top)
+            assertTrue(editor.bottom < third.top)
+            input("Corrected repetitions", "11")
+            click("Save Correction")
+            waitFor("Correction saved")
+            val corrected = repository.active()!!
+            val originalSets = before.exercises.single().sets.sortedBy { it.sequence }
+            assertEquals(listOf(originalSets[0], originalSets[1].copy(repetitions = 11), originalSets[2]), corrected.exercises.single().sets.sortedBy { it.sequence })
+            assertEquals(before.session, corrected.session)
+
+            waitFor("Add an extra set")
+            click("Add an extra set")
+            waitFor("Extra set 4")
+            click("Cancel extra set")
+            compose.onNodeWithText("Save Set").assertDoesNotExist()
+            click("Add an extra set")
+            click("Save Set")
+            waitFor("Set saved")
+            waitFor("Add an extra set")
+            compose.onNodeWithText("Save Set").assertDoesNotExist()
+            assertEquals(4, repository.active()!!.exercises.single().sets.size)
+        } finally {
+            compose.activityRule.scenario.close()
+            database.close()
+            context.deleteDatabase(name)
+        }
+    }
+
+    @Test fun t03FailedWarmdownAfterLeavingRecorderShowsDialogErrorAndRetry() = runBlocking {
         val name = "b05-warmdown-error-ui-test.db"
         context.deleteDatabase(name)
         val database = GymDatabase.build(context, name)
@@ -257,9 +318,9 @@ class WorkoutFinishUiTest {
             compose.setContent { GymTrackerTheme { WorkoutRoute(model, {}) } }
             waitFor("Exercises")
             click("${BuiltInCatalogue.exercises.first().name} · Partial · 2 saved")
-            compose.onNodeWithText("Home").performScrollTo().assertIsDisplayed()
-            compose.onNodeWithText("Saved sets").assertIsNotDisplayed()
+            compose.onNodeWithText("Warm Down").assertDoesNotExist()
             val draft = model.uiState.value.drafts[exercise]
+            click("Back to Exercises")
             database.openHelper.writableDatabase.execSQL("CREATE TRIGGER b05_warmdown_reject BEFORE UPDATE ON workout_sessions WHEN NEW.state = 'WARM_DOWN' BEGIN SELECT RAISE(ABORT, 'synthetic failure'); END")
             click("Warm Down")
             compose.onNodeWithText("Enter Warm-down").performClick()
@@ -332,7 +393,7 @@ class WorkoutFinishUiTest {
             click("Review ${BuiltInCatalogue.exercises[1].name}")
             click("Correct set 1")
             input("Corrected repetitions", "12")
-            compose.onNodeWithText("Save Correction").performClick()
+            click("Save Correction")
             waitFor("Correction saved")
             click("Back to Exercises")
             click("Return to Recording")

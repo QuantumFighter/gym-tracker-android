@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -86,7 +87,7 @@ class WorkoutUiTest {
             waitFor("Set saved")
             click("Back to Exercises")
             click("${BuiltInCatalogue.exercises[1].name} · Partial · 1 saved")
-            compose.onNodeWithText("1 · WORKING · 12.345 kg · 8 reps").performScrollTo().assertIsDisplayed()
+            compose.onNodeWithContentDescription("Set 1, Working, 12.345 kg, 8 reps").performScrollTo().assertIsDisplayed()
             click("Details")
             compose.onNodeWithText(BuiltInCatalogue.exercises[1].description).assertIsDisplayed()
             compose.onNodeWithText("Close").performClick()
