@@ -65,6 +65,7 @@ class WorkoutRelaunchTest {
                 compose.waitUntil(10_000) { model.uiState.value.workout != null }
                 val exerciseId = repository.active()!!.exercises.first().exercise.id
                 compose.runOnIdle { model.select(exerciseId) }
+                compose.onNodeWithContentDescription("Add an extra set").performScrollTo().performClick()
                 compose.onNodeWithText("Save Set").performScrollTo().performClick()
                 compose.waitUntil(10_000) { compose.onAllNodes(hasText("Set saved")).fetchSemanticsNodes().isNotEmpty() }
                 val snapshot = repository.active()!!
