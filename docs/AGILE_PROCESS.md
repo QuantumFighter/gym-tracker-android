@@ -1,6 +1,16 @@
 # Solo Agile and GitHub workflow
 
-Two-week iterations; scope follows actual available capacity. Planning is approved and GitHub setup is authorised. The repository and single Project implement these conventions; Android development has not started.
+Two-week iterations; scope follows actual available capacity. The repository and single Project implement these conventions. Setup-era statements below are historical, not current delivery status; use live issues, PRs and the Project. The approved UI handover refines acceptance criteria without replacing the Agile structure.
+
+## Coordinated implementation and independent review
+
+Preserve the owner's issue-to-PR workflow: select one refined issue, implement it in a dedicated task/branch, review the resulting PR in a separate task, return findings for correction, then re-run the affected checks before moving to the next issue. The coordinator reconciles the approved prototype with the existing epics and issues; it does not replace them with a parallel backlog.
+
+Before assigning work, check live PRs and active tasks. Reserve any in-progress increment and never edit its working tree or start a competing implementation. Documentation reconciliation may run in an isolated branch; it is not another application story. A later instruction can delegate routine sequencing, but does not silently waive review, visual approval, merge authorisation or unresolved product decisions.
+
+Use [UI specification](ui/UI_SPECIFICATION.md), [decision changes](ui/DECISION_CHANGES.md) and [native gap audit](ui/NATIVE_GAP_AUDIT.md) to update existing issue criteria and FR/T mappings. Preserve stable identifiers, issue history, release gates and broad-story dependencies. Split small slices with explicit narrower dependencies rather than reopening completed stories or marking a partial PR as the whole story complete. Keep current priority, iteration and status in the Project; the handover's sequence is a refinement proposal, not an automatic sprint reassignment.
+
+The implementer opens a focused draft PR. An independent review checks scope, correctness, persistence/recovery and acceptance evidence. Resolve findings, verify the final commit's named CI checks, and obtain the required native visual review. Do not automatically merge or start the next application story while its review or a blocking owner decision remains outstanding.
 
 ## Sprint rhythm
 
